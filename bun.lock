@@ -5,7 +5,7 @@
       "name": "docs-agent",
       "dependencies": {
         "ai": "^5.0.51",
-        "blink": "^0.1.44",
+        "blink": "^0.1.45",
         "esbuild": "^0.25.10",
         "fast-xml-parser": "^4.4.1",
         "node-html-parser": "^6.1.12",
@@ -81,7 +81,7 @@
 
     "ai": ["ai@5.0.51", "", { "dependencies": { "@ai-sdk/gateway": "1.0.28", "@ai-sdk/provider": "2.0.0", "@ai-sdk/provider-utils": "3.0.9", "@opentelemetry/api": "1.9.0" }, "peerDependencies": { "zod": "^3.25.76 || ^4" } }, "sha512-ToKW099QWUJNqePZbWGg8FSfxTxS3UN9U6yCla8rYdW0EBTDNPnpRwK1N6ER9TfV+dFtdUu+ZgKSlhQnEThriQ=="],
 
-    "blink": ["blink@0.1.44", "", { "dependencies": { "zod": "^4.1.5" }, "optionalDependencies": { "esbuild": "^0.25.9" }, "bin": { "blink": "dist/cli/index.js" } }, "sha512-ksfv6C1OTg/cmxjLDbD00AT62rrmExJhcAyeAfaeJpT2q9sRRdm9ya4pXZRfBZBEN5qgUwamGGeR8fS+oUuZDg=="],
+    "blink": ["blink@0.1.45", "", { "dependencies": { "zod": "^4.1.5" }, "optionalDependencies": { "esbuild": "^0.25.9" }, "bin": { "blink": "dist/cli/index.js" } }, "sha512-3X/DYDZNgLgb1QEUqi+TsNciTe6suRSFAqpn3o1Gy8EHLoy2BMsl+bzDDKsOcC888UmswbAxwF7BXNunf6U9ng=="],
 
     "boolbase": ["boolbase@1.0.0", "", {}, "sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww=="],
 
