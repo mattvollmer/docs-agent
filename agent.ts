@@ -3,6 +3,7 @@ import * as blink from "blink";
 import { z } from "zod";
 import { XMLParser } from "fast-xml-parser";
 import { parse } from "node-html-parser";
+import * as github from "@blink-sdk/github";
 
 // Types
 type SitemapEntry = {
@@ -397,6 +398,12 @@ Guidelines
             };
           },
         }),
+        ...blink.tools.prefix(
+          blink.tools.with(github.tools, {
+            accessToken: process.env.GITHUB_TOKEN,
+          }),
+          "github_",
+        ),
       },
     });
   },

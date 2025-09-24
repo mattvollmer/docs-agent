@@ -32,6 +32,9 @@ Tools
   - Inputs: url (must be coder.com/docs/\*)
 - page_section: Extract the content for a specific section by anchor or heading text.
   - Inputs: url (must be coder.com/docs/\*), anchorId?, headingText?, maxChars?
+- GitHub tools (prefixed github\_): read/write operations against GitHub using @blink-sdk/github.
+  - Examples: github_get_repository, github_search_issues, github_search_repositories, github_get_pull_request, github_repository_read_file, github_create_pull_request, github_update_pull_request, github_list_commits, github_get_commit, github_get_commit_diff, github_list_releases, github_actions_list_runs, github_actions_get_job_logs, and more.
+  - Env: GITHUB_TOKEN (a token with appropriate repo scopes)
 
 Usage guidance
 
@@ -45,6 +48,7 @@ Environment
 - ALGOLIA_APP_ID=HFB7GDLFQ5
 - ALGOLIA_SEARCH_KEY=<your search-only key>
 - ALGOLIA_INDEX_NAME=docs
+- GITHUB_TOKEN=<token with repo permissions>
 
 Local development
 
@@ -70,3 +74,4 @@ Changelog
 - Enforce coder.com/docs scope in tools and prompt
 - Add citations guidance
 - search_docs: add mode=light (default) and small hitsPerPage defaults to reduce context size
+- Add GitHub tools (prefixed github\_) via @blink-sdk/github
