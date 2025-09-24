@@ -7,6 +7,12 @@ Scope
 - "Docs" means coder.com/docs exclusively. The agent does not search or cite non-coder documentation sites.
 - Tools enforce this: Algolia hits are filtered to coder.com/docs; page tools reject non-docs URLs.
 
+Citations
+
+- Include links to the exact coder.com/docs page(s) used whenever possible.
+- Prefer placing the link next to the relevant statement or quote.
+- Use page_section to extract precise content to quote.
+
 Capabilities
 
 - Search: Uses Algolia DocSearch to retrieve relevant docs content.
@@ -60,3 +66,4 @@ Changelog
 - Removed demo IP address tool
 - Updated system prompt to define agent identity and tool usage
 - Enforce coder.com/docs scope in tools and prompt
+- Add citations guidance
