@@ -2,6 +2,11 @@ Blink for Docs (Coder)
 
 An agent specialized for answering questions about Coder using the official documentation at https://coder.com/docs.
 
+Scope
+
+- "Docs" means coder.com/docs exclusively. The agent does not search or cite non-coder documentation sites.
+- Tools enforce this: Algolia hits are filtered to coder.com/docs; page tools reject non-docs URLs.
+
 Capabilities
 
 - Search: Uses Algolia DocSearch to retrieve relevant docs content.
@@ -17,9 +22,9 @@ Tools
 - sitemap_list: Flatten sitemap (default https://coder.com/sitemap.xml), filtered to /docs.
   - Inputs: sitemapUrl?, include[]?, exclude[]?, limit?
 - page_outline: Fetch title + h1–h3 headings, anchors, and internal links for a page.
-  - Inputs: url
+  - Inputs: url (must be coder.com/docs/\*)
 - page_section: Extract the content for a specific section by anchor or heading text.
-  - Inputs: url, anchorId?, headingText?, maxChars?
+  - Inputs: url (must be coder.com/docs/\*), anchorId?, headingText?, maxChars?
 
 Usage guidance
 
@@ -54,3 +59,4 @@ Changelog
 - Initial tools: search_docs, sitemap_list, page_outline, page_section
 - Removed demo IP address tool
 - Updated system prompt to define agent identity and tool usage
+- Enforce coder.com/docs scope in tools and prompt

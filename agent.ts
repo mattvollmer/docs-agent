@@ -20,7 +20,7 @@ async function fetchXml(url: string) {
 
 async function parseSitemap(
   url: string,
-  seen = new Set<string>()
+  seen = new Set<string>(),
 ): Promise<SitemapEntry[]> {
   if (seen.has(url)) return [] as SitemapEntry[];
   seen.add(url);
@@ -34,7 +34,7 @@ async function parseSitemap(
       ? doc.sitemapindex.sitemap
       : [doc.sitemapindex.sitemap];
     const nested = await Promise.all(
-      items.map((s: any) => parseSitemap(s.loc, seen))
+      items.map((s: any) => parseSitemap(s.loc, seen)),
     );
     return nested.flat();
   }
@@ -80,6 +80,7 @@ Tools and usage
 - page_section: When citing or extracting exact content, fetch the specific section by anchor or heading.
 
 Guidelines
+- "Docs" means coder.com/docs exclusively; do not search or cite non-coder docs sites.
 - Prefer precise quotes from page_section when giving authoritative answers.
 - If a user asks for a list/TOC/versions, use sitemap_list and page_outline.
 - Keep responses concise and ask for clarification when the query is ambiguous.
@@ -135,13 +136,17 @@ Guidelines
                   facetFilters: input.facetFilters,
                   filters: input.filters,
                 }),
-              }
+              },
             );
             if (!res.ok) throw new Error(`Algolia error ${res.status}`);
             const data = await res.json();
+            const rawHits = (data.hits ?? []) as any[];
+            const filtered = rawHits.filter(
+              (h) => typeof h.url === "string" && isDocsUrl(h.url),
+            );
             return {
               available: true as const,
-              hits: (data.hits ?? []).map((h: any) => ({
+              hits: filtered.map((h: any) => ({
                 url: h.url as string,
                 hierarchy: h.hierarchy,
                 content: h.content as string | undefined,
@@ -176,13 +181,13 @@ Guidelines
             entries = entries.filter((e: SitemapEntry) => isDocsUrl(e.loc));
             if (input.include?.length) {
               entries = entries.filter((e: SitemapEntry) =>
-                input.include!.some((p: string) => e.loc.includes(p))
+                input.include!.some((p: string) => e.loc.includes(p)),
               );
             }
             if (input.exclude?.length) {
               entries = entries.filter(
                 (e: SitemapEntry) =>
-                  !input.exclude!.some((p: string) => e.loc.includes(p))
+                  !input.exclude!.some((p: string) => e.loc.includes(p)),
               );
             }
             if (input.limit) entries = entries.slice(0, input.limit);
@@ -194,6 +199,9 @@ Guidelines
             "Fetch a Docs page and return title and outline (h1–h3 + anchors + internal links).",
           inputSchema: z.object({ url: z.string().url() }),
           execute: async ({ url }: { url: string }) => {
+            if (!isDocsUrl(url)) {
+              throw new Error("Only coder.com/docs URLs are supported");
+            }
             const res = await fetch(url, { redirect: "follow" });
             if (!res.ok)
               throw new Error(`Failed to fetch page: ${url} (${res.status})`);
@@ -259,6 +267,9 @@ Guidelines
             headingText?: string;
             maxChars?: number;
           }) => {
+            if (!isDocsUrl(url)) {
+              throw new Error("Only coder.com/docs URLs are supported");
+            }
             const res = await fetch(url, { redirect: "follow" });
             if (!res.ok)
               throw new Error(`Failed to fetch page: ${url} (${res.status})`);
