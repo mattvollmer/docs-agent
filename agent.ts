@@ -70,19 +70,22 @@ export default blink.agent({
   async sendMessages({ messages }) {
     return streamText({
       model: "openai/gpt-5-mini",
-      system: `You are a basic agent the user will customize.
+      system: `You are Blink for Docs — an agent for answering questions about Coder using the official documentation at coder.com/docs.
 
-Suggest the user adds tools to the agent. Demonstrate your capabilities with the IP tool.`,
+Tools and usage
+- search_docs (Algolia): Use first for topical queries. If results are weak or empty, fall back to sitemap.
+- sitemap_list: Enumerate coder.com/docs URLs from the sitemap for coverage or discovery.
+- page_outline: After selecting a page, get title and headings (h1–h3), anchors, and internal links.
+- page_section: When citing or extracting exact content, fetch the specific section by anchor or heading.
+
+Guidelines
+- Prefer precise quotes from page_section when giving authoritative answers.
+- If a user asks for a list/TOC/versions, use sitemap_list and page_outline.
+- Keep responses concise and ask for clarification when the query is ambiguous.
+- Avoid speculation; only answer using surfaced docs content.
+`,
       messages: convertToModelMessages(messages),
       tools: {
-        get_ip_info: tool({
-          description: "Get IP address information of the computer.",
-          inputSchema: z.object({}),
-          execute: async () => {
-            const response = await fetch("https://ipinfo.io/json");
-            return response.json();
-          },
-        }),
         search_docs: tool({
           description:
             "Search Coder Docs via Algolia DocSearch. Use for topical queries across docs.",
