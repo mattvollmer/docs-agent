@@ -1,0 +1,77 @@
+{
+  "display_information": {
+    "name": "Docs Agent",
+    "description": "Coder Docs Agent for Slack"
+  },
+  "features": {
+    "app_home": {
+      "home_tab_enabled": true,
+      "messages_tab_enabled": true,
+      "messages_tab_read_only_enabled": false
+    },
+    "bot_user": {
+      "display_name": "Docs Agent",
+      "always_online": true
+    },
+    "assistant_view": {
+      "assistant_description": "A Slack bot built with Blink that answers from Coder Docs"
+    }
+  },
+  "settings": {
+    "event_subscriptions": {
+      "request_url": "https://blink.so/api/webhook/8eac6e13-350e-40a9-b234-c5555cfaea11",
+      "bot_events": [
+        "app_mention",
+        "assistant_thread_context_changed",
+        "assistant_thread_started",
+        "link_shared",
+        "member_joined_channel",
+        "message.channels",
+        "message.groups",
+        "message.im",
+        "reaction_added",
+        "reaction_removed"
+      ]
+    },
+    "interactivity": {
+      "is_enabled": true,
+      "request_url": "https://blink.so/api/webhook/8eac6e13-350e-40a9-b234-c5555cfaea11",
+      "message_menu_options_url": "https://blink.so/api/webhook/8eac6e13-350e-40a9-b234-c5555cfaea11"
+    },
+    "org_deploy_enabled": false,
+    "socket_mode_enabled": false,
+    "token_rotation_enabled": true
+  },
+  "oauth_config": {
+    "redirect_urls": [
+      "https://blink.so/api/webhook/8eac6e13-350e-40a9-b234-c5555cfaea11"
+    ],
+    "scopes": {
+      "user": [
+        "channels:history",
+        "channels:read",
+        "groups:history",
+        "groups:read",
+        "users:read"
+      ],
+      "bot": [
+        "app_mentions:read",
+        "assistant:write",
+        "channels:history",
+        "channels:read",
+        "chat:write",
+        "commands",
+        "emoji:read",
+        "files:read",
+        "groups:history",
+        "groups:read",
+        "im:history",
+        "reactions:read",
+        "reactions:write",
+        "users:read",
+        "links:read",
+        "mpim:read"
+      ]
+    }
+  }
+}
