@@ -20,7 +20,7 @@ async function fetchXml(url: string) {
 
 async function parseSitemap(
   url: string,
-  seen = new Set<string>(),
+  seen = new Set<string>()
 ): Promise<SitemapEntry[]> {
   if (seen.has(url)) return [] as SitemapEntry[];
   seen.add(url);
@@ -34,7 +34,7 @@ async function parseSitemap(
       ? doc.sitemapindex.sitemap
       : [doc.sitemapindex.sitemap];
     const nested = await Promise.all(
-      items.map((s: any) => parseSitemap(s.loc, seen)),
+      items.map((s: any) => parseSitemap(s.loc, seen))
     );
     return nested.flat();
   }
@@ -69,7 +69,8 @@ function isDocsUrl(url: string) {
 export default blink.agent({
   async sendMessages({ messages }) {
     return streamText({
-      model: "openai/gpt-5-mini",
+      //model: "openai/gpt-5-mini",
+      model: "anthropic/claude-4-sonnet",
       system: `You are Blink for Docs — an agent for answering questions about Coder using the official documentation at coder.com/docs.
 
 Tools and usage
@@ -134,7 +135,7 @@ Guidelines
                   facetFilters: input.facetFilters,
                   filters: input.filters,
                 }),
-              },
+              }
             );
             if (!res.ok) throw new Error(`Algolia error ${res.status}`);
             const data = await res.json();
@@ -175,13 +176,13 @@ Guidelines
             entries = entries.filter((e: SitemapEntry) => isDocsUrl(e.loc));
             if (input.include?.length) {
               entries = entries.filter((e: SitemapEntry) =>
-                input.include!.some((p: string) => e.loc.includes(p)),
+                input.include!.some((p: string) => e.loc.includes(p))
               );
             }
             if (input.exclude?.length) {
               entries = entries.filter(
                 (e: SitemapEntry) =>
-                  !input.exclude!.some((p: string) => e.loc.includes(p)),
+                  !input.exclude!.some((p: string) => e.loc.includes(p))
               );
             }
             if (input.limit) entries = entries.slice(0, input.limit);
