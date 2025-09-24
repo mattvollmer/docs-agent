@@ -170,6 +170,12 @@ Guidelines
               return ff.includes("tags:v2");
             });
             if (!hasV2) baseFacetFilters.push("tags:v2");
+            // Add an AND filter for version:main if not already present
+            const hasMain = baseFacetFilters.some((ff) => {
+              if (typeof ff === "string") return ff === "version:main";
+              return ff.includes("version:main");
+            });
+            if (!hasMain) baseFacetFilters.push("version:main");
 
             const body: any = {
               query: input.query,
