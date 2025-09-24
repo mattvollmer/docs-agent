@@ -66,6 +66,22 @@ function isDocsUrl(url: string) {
   }
 }
 
+function stripHtml(input: string | undefined, max = 220): string | undefined {
+  if (!input) return undefined;
+  const s = input
+    .replace(/<[^>]+>/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return s.length > max ? s.slice(0, max - 1) + "…" : s;
+}
+
+function hierarchyTitle(h: any): string | undefined {
+  if (!h) return undefined;
+  const levels = ["lvl1", "lvl2", "lvl0", "lvl3", "lvl4", "lvl5", "lvl6"];
+  for (const k of levels) if (h[k]) return String(h[k]);
+  return undefined;
+}
+
 export default blink.agent({
   async sendMessages({ messages }) {
     return streamText({
@@ -74,7 +90,7 @@ export default blink.agent({
       system: `You are Blink for Docs — an agent for answering questions about Coder using the official documentation at coder.com/docs.
 
 Tools and usage
-- search_docs (Algolia): Use first for topical queries. If results are weak or empty, fall back to sitemap.
+- search_docs (Algolia): Use first for topical queries. Start with mode=light and hitsPerPage ≤ 3; use page_outline/page_section for details. If results are weak or empty, fall back to sitemap.
 - sitemap_list: Enumerate coder.com/docs URLs from the sitemap for coverage or discovery.
 - page_outline: After selecting a page, get title and headings (h1–h3), anchors, and internal links.
 - page_section: When citing or extracting exact content, fetch the specific section by anchor or heading.
@@ -91,15 +107,16 @@ Guidelines
       tools: {
         search_docs: tool({
           description:
-            "Search Coder Docs via Algolia DocSearch. Use for topical queries across docs.",
+            "Search Coder Docs via Algolia DocSearch. Mode 'light' returns url/title/snippet only; 'full' returns hierarchy/content/snippet.",
           inputSchema: z.object({
             query: z.string(),
             page: z.number().int().min(0).optional(),
-            hitsPerPage: z.number().int().min(1).max(100).optional(),
+            hitsPerPage: z.number().int().min(1).max(10).optional(),
             facetFilters: z
               .array(z.union([z.string(), z.array(z.string())]))
               .optional(),
             filters: z.string().optional(),
+            mode: z.enum(["light", "full"]).optional(),
           }),
           execute: async (input: {
             query: string;
@@ -107,6 +124,7 @@ Guidelines
             hitsPerPage?: number;
             facetFilters?: (string | string[])[];
             filters?: string;
+            mode?: "light" | "full";
           }) => {
             const appId = process.env.ALGOLIA_APP_ID as string | undefined;
             const apiKey = process.env.ALGOLIA_SEARCH_KEY as string | undefined;
@@ -119,6 +137,22 @@ Guidelines
                   "Missing Algolia env: ALGOLIA_APP_ID, ALGOLIA_SEARCH_KEY, ALGOLIA_INDEX_NAME",
               };
             }
+            const mode = input.mode ?? "light";
+            const hitsPerPage = Math.min(input.hitsPerPage ?? 3, 5);
+
+            const body: any = {
+              query: input.query,
+              page: input.page ?? 0,
+              hitsPerPage,
+              attributesToRetrieve:
+                mode === "light"
+                  ? ["url", "hierarchy", "type"]
+                  : ["url", "hierarchy", "content", "type"],
+              facetFilters: input.facetFilters,
+              filters: input.filters,
+            };
+            if (mode === "full") body.attributesToSnippet = ["content:40"];
+
             const res = await fetch(
               `https://${appId}-dsn.algolia.net/1/indexes/${encodeURIComponent(indexName)}/query`,
               {
@@ -128,15 +162,7 @@ Guidelines
                   "X-Algolia-Application-Id": appId,
                   "X-Algolia-API-Key": apiKey,
                 },
-                body: JSON.stringify({
-                  query: input.query,
-                  page: input.page ?? 0,
-                  hitsPerPage: input.hitsPerPage ?? 10,
-                  attributesToRetrieve: ["url", "hierarchy", "content", "type"],
-                  attributesToSnippet: ["content:40"],
-                  facetFilters: input.facetFilters,
-                  filters: input.filters,
-                }),
+                body: JSON.stringify(body),
               },
             );
             if (!res.ok) throw new Error(`Algolia error ${res.status}`);
@@ -145,16 +171,33 @@ Guidelines
             const filtered = rawHits.filter(
               (h) => typeof h.url === "string" && isDocsUrl(h.url),
             );
+
+            const hits =
+              mode === "light"
+                ? filtered.map((h: any) => ({
+                    url: h.url as string,
+                    title: hierarchyTitle(h.hierarchy),
+                    snippet: stripHtml(
+                      h._snippetResult?.content?.value as string | undefined,
+                      200,
+                    ),
+                    objectID: h.objectID as string,
+                  }))
+                : filtered.map((h: any) => ({
+                    url: h.url as string,
+                    hierarchy: h.hierarchy,
+                    content: h.content as string | undefined,
+                    snippet: stripHtml(
+                      h._snippetResult?.content?.value as string | undefined,
+                      300,
+                    ),
+                    type: h.type as string | undefined,
+                    objectID: h.objectID as string,
+                  }));
+
             return {
               available: true as const,
-              hits: filtered.map((h: any) => ({
-                url: h.url as string,
-                hierarchy: h.hierarchy,
-                content: h.content as string | undefined,
-                type: h.type as string | undefined,
-                snippet: h._snippetResult?.content?.value as string | undefined,
-                objectID: h.objectID as string,
-              })),
+              hits,
               page: data.page as number,
               nbPages: data.nbPages as number,
               nbHits: data.nbHits as number,

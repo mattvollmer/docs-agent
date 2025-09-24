@@ -23,7 +23,8 @@ Capabilities
 Tools
 
 - search_docs: Algolia search across Coder Docs.
-  - Inputs: query, page?, hitsPerPage?, facetFilters?, filters?
+  - Inputs: query, page?, hitsPerPage? (default 3, max 5), facetFilters?, filters?, mode? ('light'|'full', default 'light')
+  - Returns: mode 'light' → url, title, snippet; mode 'full' → url, hierarchy, content, snippet
   - Env: ALGOLIA_APP_ID, ALGOLIA_SEARCH_KEY, ALGOLIA_INDEX_NAME (default: docs)
 - sitemap_list: Flatten sitemap (default https://coder.com/sitemap.xml), filtered to /docs.
   - Inputs: sitemapUrl?, include[]?, exclude[]?, limit?
@@ -34,7 +35,8 @@ Tools
 
 Usage guidance
 
-- Use search_docs first for topical queries (features, how-tos). If results are weak or empty, fall back to sitemap_list to discover relevant pages, then page_outline and page_section for grounding.
+- Start with search_docs using mode=light and hitsPerPage ≤ 3 to keep context small; drill in with page_outline and page_section for detail.
+- If search results are weak or empty, use sitemap_list to enumerate pages, then page_outline and page_section.
 - For TOC or navigation-style questions, use sitemap_list and page_outline.
 - When giving authoritative answers, prefer quoting from page_section to ensure accuracy.
 
@@ -67,3 +69,4 @@ Changelog
 - Updated system prompt to define agent identity and tool usage
 - Enforce coder.com/docs scope in tools and prompt
 - Add citations guidance
+- search_docs: add mode=light (default) and small hitsPerPage defaults to reduce context size
