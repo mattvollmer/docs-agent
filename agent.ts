@@ -1,24 +1,440 @@
-import { convertToModelMessages, streamText, tool } from "ai";
+import { convertToModelMessages, streamText, tool, isToolUIPart } from "ai";
 import * as blink from "blink";
 import { z } from "zod";
+import { XMLParser } from "fast-xml-parser";
+import { parse } from "node-html-parser";
+import * as github from "@blink-sdk/github";
+import * as websearch from "@blink-sdk/web-search";
+
+// Types
+type SitemapEntry = {
+  loc: string;
+  lastmod?: string;
+  changefreq?: string;
+  priority?: number;
+};
+
+async function fetchXml(url: string) {
+  const res = await fetch(url, { redirect: "follow" });
+  if (!res.ok) throw new Error(`Failed to fetch XML: ${url} (${res.status})`);
+  return await res.text();
+}
+
+async function parseSitemap(
+  url: string,
+  seen = new Set<string>(),
+): Promise<SitemapEntry[]> {
+  if (seen.has(url)) return [] as SitemapEntry[];
+  seen.add(url);
+
+  const parser = new XMLParser({ ignoreAttributes: false });
+  const xml = await fetchXml(url);
+  const doc = parser.parse(xml);
+
+  if (doc.sitemapindex?.sitemap) {
+    const items = Array.isArray(doc.sitemapindex.sitemap)
+      ? doc.sitemapindex.sitemap
+      : [doc.sitemapindex.sitemap];
+    const nested = await Promise.all(
+      items.map((s: any) => parseSitemap(s.loc, seen)),
+    );
+    return nested.flat();
+  }
+
+  if (doc.urlset?.url) {
+    const urls = Array.isArray(doc.urlset.url)
+      ? doc.urlset.url
+      : [doc.urlset.url];
+    return urls.map((u: any) => ({
+      loc: u.loc,
+      lastmod: u.lastmod,
+      changefreq: u.changefreq,
+      priority: u.priority ? Number(u.priority) : undefined,
+    }));
+  }
+
+  return [] as SitemapEntry[];
+}
+
+function isDocsUrl(url: string) {
+  try {
+    const u = new URL(url);
+    return (
+      (u.hostname === "coder.com" || u.hostname.endsWith(".coder.com")) &&
+      (u.pathname === "/docs" || u.pathname.startsWith("/docs/"))
+    );
+  } catch {
+    return false;
+  }
+}
+
+function stripHtml(input: string | undefined, max = 220): string | undefined {
+  if (!input) return undefined;
+  const s = input
+    .replace(/<[^>]+>/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return s.length > max ? s.slice(0, max - 1) + "…" : s;
+}
+
+function hierarchyTitle(h: any): string | undefined {
+  if (!h) return undefined;
+  const levels = ["lvl1", "lvl2", "lvl0", "lvl3", "lvl4", "lvl5", "lvl6"];
+  for (const k of levels) if (h[k]) return String(h[k]);
+  return undefined;
+}
 
 export default blink.agent({
   async sendMessages({ messages }) {
+    messages = messages.map((m) => {
+      for (const part of m.parts) {
+        if (isToolUIPart(part) && part.state === "output-error") {
+          if (part.errorText.length > 2_000) {
+            part.errorText = `Error: ${part.errorText.slice(0, 2_000)}... this error was too long to display.`;
+          }
+        }
+      }
+      return m;
+    });
     return streamText({
-      model: "openai/gpt-5-mini",
-      system: `You are a basic agent the user will customize.
+      //model: "openai/gpt-5-mini",
+      model: "anthropic/claude-4-sonnet",
+      system: `You are Blink for Docs — an agent for answering questions about Coder using the official documentation at coder.com/docs.
 
-Suggest the user adds tools to the agent. Demonstrate your capabilities with the IP tool.`,
+Tools and usage
+- search_docs (Algolia): Use first for topical queries. Start with mode=light and hitsPerPage ≤ 3; use page_outline/page_section for details. If results are weak or empty, fall back to sitemap.
+- sitemap_list: Enumerate coder.com/docs URLs from the sitemap for coverage or discovery.
+- page_outline: After selecting a page, get title and headings (h1–h3), anchors, and internal links.
+- page_section: When citing or extracting exact content, fetch the specific section by anchor or heading.
+
+Guidelines
+- Prefer Docs-first answers. Only search GitHub code if the docs are insufficient or the user asks for code-level details.
+- Optimize for speed: return concise, sourced answers quickly. Then ask if the user wants to continue by searching the code.
+- If confidence is low or docs are missing, say so explicitly, provide any partial findings, and ask: "Should I continue by searching the code repositories?"
+- When using web_search, constrain queries to site:coder.com/docs unless explicitly asked to search the broader web.
+- "Docs" means coder.com/docs exclusively; do not search or cite non-coder docs sites.
+- GitHub repos: when a repository is referenced without an owner, assume the owner is the coder org (e.g., "vscode-coder" → "coder/vscode-coder").
+- If a repository isn’t specified at all, assume coder/coder by default.
+- Always cite sources with links to the exact coder.com/docs page(s) you used. Prefer placing the link next to the relevant statement.
+- Prefer precise quotes from page_section when giving authoritative answers.
+- If a user asks for a list/TOC/versions, use sitemap_list and page_outline.
+- Keep responses concise and ask for clarification when the query is ambiguous.
+- Avoid speculation; only answer using surfaced docs content.
+`,
       messages: convertToModelMessages(messages),
       tools: {
-        get_ip_info: tool({
-          description: "Get IP address information of the computer.",
-          inputSchema: z.object({}),
-          execute: async () => {
-            const response = await fetch("https://ipinfo.io/json");
-            return response.json();
+        search_web: websearch.tools.web_search,
+        search_docs: tool({
+          description:
+            "Search Coder Docs via Algolia DocSearch. Mode 'light' returns url/title/snippet only; 'full' returns hierarchy/content/snippet.",
+          inputSchema: z.object({
+            query: z.string(),
+            page: z.number().int().min(0).optional(),
+            hitsPerPage: z.number().int().min(1).max(10).optional(),
+            facetFilters: z
+              .array(z.union([z.string(), z.array(z.string())]))
+              .optional(),
+            filters: z.string().optional(),
+            mode: z.enum(["light", "full"]).optional(),
+          }),
+          execute: async (input: {
+            query: string;
+            page?: number;
+            hitsPerPage?: number;
+            facetFilters?: (string | string[])[];
+            filters?: string;
+            mode?: "light" | "full";
+          }) => {
+            const appId = process.env.ALGOLIA_APP_ID as string | undefined;
+            const apiKey = process.env.ALGOLIA_SEARCH_KEY as string | undefined;
+            const indexName =
+              (process.env.ALGOLIA_INDEX_NAME as string | undefined) ?? "docs";
+            if (!appId || !apiKey || !indexName) {
+              return {
+                available: false as const,
+                reason:
+                  "Missing Algolia env: ALGOLIA_APP_ID, ALGOLIA_SEARCH_KEY, ALGOLIA_INDEX_NAME",
+              };
+            }
+            const mode = input.mode ?? "light";
+            const hitsPerPage = Math.min(input.hitsPerPage ?? 3, 5);
+
+            const body: any = {
+              query: input.query,
+              page: input.page ?? 0,
+              hitsPerPage,
+              attributesToRetrieve:
+                mode === "light"
+                  ? ["url", "hierarchy", "type"]
+                  : ["url", "hierarchy", "content", "type"],
+              facetFilters: input.facetFilters,
+              filters: input.filters,
+            };
+            if (mode === "full") body.attributesToSnippet = ["content:40"];
+
+            const res = await fetch(
+              `https://${appId}-dsn.algolia.net/1/indexes/${encodeURIComponent(indexName)}/query`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-Algolia-Application-Id": appId,
+                  "X-Algolia-API-Key": apiKey,
+                },
+                body: JSON.stringify(body),
+              },
+            );
+            if (!res.ok) throw new Error(`Algolia error ${res.status}`);
+            const data = await res.json();
+            const rawHits = (data.hits ?? []) as any[];
+            const filtered = rawHits.filter(
+              (h) => typeof h.url === "string" && isDocsUrl(h.url),
+            );
+
+            const hits =
+              mode === "light"
+                ? filtered.map((h: any) => ({
+                    url: h.url as string,
+                    title: hierarchyTitle(h.hierarchy),
+                    snippet: stripHtml(
+                      h._snippetResult?.content?.value as string | undefined,
+                      200,
+                    ),
+                    objectID: h.objectID as string,
+                  }))
+                : filtered.map((h: any) => ({
+                    url: h.url as string,
+                    hierarchy: h.hierarchy,
+                    content: h.content as string | undefined,
+                    snippet: stripHtml(
+                      h._snippetResult?.content?.value as string | undefined,
+                      300,
+                    ),
+                    type: h.type as string | undefined,
+                    objectID: h.objectID as string,
+                  }));
+
+            return {
+              available: true as const,
+              hits,
+              page: data.page as number,
+              nbPages: data.nbPages as number,
+              nbHits: data.nbHits as number,
+            };
           },
         }),
+        sitemap_list: tool({
+          description:
+            "Fetch and flatten sitemap URLs (default https://coder.com/sitemap.xml), filtered to coder.com/docs.*",
+          inputSchema: z.object({
+            sitemapUrl: z.string().url().optional(),
+            include: z.array(z.string()).optional(),
+            exclude: z.array(z.string()).optional(),
+            limit: z.number().int().min(1).max(10000).optional(),
+          }),
+          execute: async (input: {
+            sitemapUrl?: string;
+            include?: string[];
+            exclude?: string[];
+            limit?: number;
+          }) => {
+            const sitemapUrl =
+              input.sitemapUrl ?? "https://coder.com/sitemap.xml";
+            let entries: SitemapEntry[] = await parseSitemap(sitemapUrl);
+            entries = entries.filter((e: SitemapEntry) => isDocsUrl(e.loc));
+            if (input.include?.length) {
+              entries = entries.filter((e: SitemapEntry) =>
+                input.include!.some((p: string) => e.loc.includes(p)),
+              );
+            }
+            if (input.exclude?.length) {
+              entries = entries.filter(
+                (e: SitemapEntry) =>
+                  !input.exclude!.some((p: string) => e.loc.includes(p)),
+              );
+            }
+            if (input.limit) entries = entries.slice(0, input.limit);
+            return { count: entries.length, entries };
+          },
+        }),
+        page_outline: tool({
+          description:
+            "Fetch a Docs page and return title and outline (h1–h3 + anchors + internal links).",
+          inputSchema: z.object({ url: z.string().url() }),
+          execute: async ({ url }: { url: string }) => {
+            if (!isDocsUrl(url)) {
+              throw new Error("Only coder.com/docs URLs are supported");
+            }
+            const res = await fetch(url, { redirect: "follow" });
+            if (!res.ok)
+              throw new Error(`Failed to fetch page: ${url} (${res.status})`);
+            const html = await res.text();
+            const root = parse(html);
+
+            const title = root.querySelector("title")?.text?.trim() ?? null;
+
+            const headings: Array<{
+              level: number;
+              id: string | null;
+              text: string;
+            }> = [];
+            for (const level of [1, 2, 3]) {
+              root.querySelectorAll(`h${level}`).forEach((h) => {
+                const id =
+                  h.getAttribute("id") ??
+                  h.querySelector("a[id]")?.getAttribute("id") ??
+                  null;
+                const text = h.text.trim();
+                headings.push({ level, id, text });
+              });
+            }
+
+            const anchors = root
+              .querySelectorAll('a[href^="#"]')
+              .map((a) => a.getAttribute("href"))
+              .filter((href): href is string => typeof href === "string");
+
+            const internalLinks = root
+              .querySelectorAll('a[href^="/"]')
+              .map((a) => a.getAttribute("href"))
+              .filter((u): u is string => !!u)
+              .filter((u) => {
+                try {
+                  const full = new URL(u, url).toString();
+                  return isDocsUrl(full);
+                } catch {
+                  return false;
+                }
+              });
+
+            return { url, title, headings, anchors, internalLinks };
+          },
+        }),
+        page_section: tool({
+          description:
+            "Return the exact content for a specific Docs page section by anchor or heading text.",
+          inputSchema: z.object({
+            url: z.string().url(),
+            anchorId: z.string().optional(),
+            headingText: z.string().optional(),
+            maxChars: z.number().int().min(100).max(20000).optional(),
+          }),
+          execute: async ({
+            url,
+            anchorId,
+            headingText,
+            maxChars,
+          }: {
+            url: string;
+            anchorId?: string;
+            headingText?: string;
+            maxChars?: number;
+          }) => {
+            if (!isDocsUrl(url)) {
+              throw new Error("Only coder.com/docs URLs are supported");
+            }
+            const res = await fetch(url, { redirect: "follow" });
+            if (!res.ok)
+              throw new Error(`Failed to fetch page: ${url} (${res.status})`);
+            const html = await res.text();
+            const root = parse(html);
+
+            const headings = root.querySelectorAll("h1, h2, h3, h4, h5, h6");
+
+            function levelOf(tagName: string) {
+              const m = tagName?.match(/^h([1-6])$/i);
+              return m ? parseInt(m[1], 10) : 6;
+            }
+
+            let targetIndex = -1;
+            let targetLevel = 6;
+
+            for (let i = 0; i < headings.length; i++) {
+              const h = headings[i];
+              const id =
+                h.getAttribute("id") ??
+                h.querySelector("a[id]")?.getAttribute("id") ??
+                null;
+              const txt = h.text.trim();
+              if (
+                (anchorId && id === anchorId) ||
+                (headingText && txt.toLowerCase() === headingText.toLowerCase())
+              ) {
+                targetIndex = i;
+                targetLevel = levelOf(h.tagName.toLowerCase());
+                break;
+              }
+            }
+
+            if (targetIndex < 0) {
+              return {
+                found: false as const,
+                reason: "Section not found by anchorId or headingText.",
+              };
+            }
+
+            const start = headings[targetIndex];
+            let htmlOut = "";
+            const codeBlocks: string[] = [];
+            const textChunks: string[] = [];
+
+            let node: any = (start as any).nextElementSibling;
+            const maxLen = maxChars ?? 5000;
+
+            while (node) {
+              const tag = node.tagName?.toLowerCase?.();
+              if (tag && tag.match(/^h[1-6]$/)) {
+                const nextLevel = levelOf(tag);
+                if (nextLevel <= targetLevel) break;
+              }
+
+              const snippet = node.toString();
+              if (htmlOut.length + snippet.length > maxLen) break;
+              htmlOut += snippet;
+
+              if (tag === "pre" || tag === "code") {
+                codeBlocks.push(node.text.trim());
+              }
+              const maybeText = node.text?.trim?.();
+              if (maybeText) textChunks.push(maybeText);
+
+              node = node.nextElementSibling;
+            }
+
+            return {
+              found: true as const,
+              url,
+              anchorId:
+                anchorId ??
+                start.getAttribute("id") ??
+                start.querySelector("a[id]")?.getAttribute("id") ??
+                null,
+              heading: start.text.trim(),
+              html: htmlOut,
+              text: textChunks.join("\n\n"),
+              codeBlocks,
+            };
+          },
+        }),
+        ...blink.tools.with(
+          {
+            github_get_repository: github.tools.get_repository,
+            github_repository_read_file: github.tools.repository_read_file,
+            github_repository_list_directory:
+              github.tools.repository_list_directory,
+            github_repository_grep_file: github.tools.repository_grep_file,
+            github_search_repositories: github.tools.search_repositories,
+            github_search_issues: github.tools.search_issues,
+            github_get_pull_request: github.tools.get_pull_request,
+            github_list_pull_request_files:
+              github.tools.list_pull_request_files,
+            github_get_issue: github.tools.get_issue,
+            github_list_commits: github.tools.list_commits,
+            github_get_commit: github.tools.get_commit,
+            github_get_commit_diff: github.tools.get_commit_diff,
+          },
+          { accessToken: process.env.GITHUB_TOKEN },
+        ),
       },
     });
   },

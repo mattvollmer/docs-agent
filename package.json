@@ -4,9 +4,17 @@
   "type": "module",
   "private": true,
   "dependencies": {
+    "@blink-sdk/github": "^0.0.9",
+    "@blink-sdk/web-search": "^0.0.3",
     "ai": "^5.0.51",
-    "blink": "^0.1.44",
+    "blink": "^0.1.45",
     "esbuild": "^0.25.10",
+    "fast-xml-parser": "^4.4.1",
+    "node-html-parser": "^6.1.12",
     "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "prettier": "^3.6.2"
   }
 }
