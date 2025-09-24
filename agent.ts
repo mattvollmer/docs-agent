@@ -1,4 +1,4 @@
-import { convertToModelMessages, streamText, tool } from "ai";
+import { convertToModelMessages, streamText, tool, isToolUIPart } from "ai";
 import * as blink from "blink";
 import { z } from "zod";
 import { XMLParser } from "fast-xml-parser";
@@ -86,6 +86,16 @@ function hierarchyTitle(h: any): string | undefined {
 
 export default blink.agent({
   async sendMessages({ messages }) {
+    messages = messages.map((m) => {
+      for (const part of m.parts) {
+        if (isToolUIPart(part) && part.state === "output-error") {
+          if (part.errorText.length > 2_000) {
+            part.errorText = `Error: ${part.errorText.slice(0, 2_000)}... this error was too long to display.`;
+          }
+        }
+      }
+      return m;
+    });
     return streamText({
       //model: "openai/gpt-5-mini",
       model: "anthropic/claude-4-sonnet",
