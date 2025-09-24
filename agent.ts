@@ -159,6 +159,18 @@ Guidelines
             const mode = input.mode ?? "light";
             const hitsPerPage = Math.min(input.hitsPerPage ?? 3, 5);
 
+            // Ensure we only search v2-tagged docs by default
+            const baseFacetFilters: (string | string[])[] = [];
+            if (input.facetFilters && Array.isArray(input.facetFilters)) {
+              for (const ff of input.facetFilters) baseFacetFilters.push(ff);
+            }
+            // Add an AND filter for tags:v2 if not already present
+            const hasV2 = baseFacetFilters.some((ff) => {
+              if (typeof ff === "string") return ff === "tags:v2";
+              return ff.includes("tags:v2");
+            });
+            if (!hasV2) baseFacetFilters.push("tags:v2");
+
             const body: any = {
               query: input.query,
               page: input.page ?? 0,
@@ -167,7 +179,7 @@ Guidelines
                 mode === "light"
                   ? ["url", "hierarchy", "type"]
                   : ["url", "hierarchy", "content", "type"],
-              facetFilters: input.facetFilters,
+              facetFilters: baseFacetFilters,
               filters: input.filters,
             };
             if (mode === "full") body.attributesToSnippet = ["content:40"];
