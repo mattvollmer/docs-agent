@@ -6,6 +6,7 @@ Scope
 
 - "Docs" means coder.com/docs exclusively. The agent does not search or cite non-coder documentation sites.
 - Tools enforce this: Algolia hits are filtered to coder.com/docs; page tools reject non-docs URLs.
+- GitHub org default: when a repository is referenced without an owner, the agent assumes the owner is the coder organization (e.g., vscode-coder → coder/vscode-coder).
 
 Citations
 
@@ -75,3 +76,4 @@ Changelog
 - Add citations guidance
 - search_docs: add mode=light (default) and small hitsPerPage defaults to reduce context size
 - Add GitHub tools (prefixed github\_) via @blink-sdk/github
+- Default GitHub owner: assume coder org when owner is omitted

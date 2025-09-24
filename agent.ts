@@ -98,6 +98,7 @@ Tools and usage
 
 Guidelines
 - "Docs" means coder.com/docs exclusively; do not search or cite non-coder docs sites.
+- GitHub repos: when a repository is referenced without an owner, assume the owner is the coder org (e.g., "vscode-coder" → "coder/vscode-coder").
 - Always cite sources with links to the exact coder.com/docs page(s) you used. Prefer placing the link next to the relevant statement.
 - Prefer precise quotes from page_section when giving authoritative answers.
 - If a user asks for a list/TOC/versions, use sitemap_list and page_outline.
