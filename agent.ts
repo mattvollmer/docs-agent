@@ -4,6 +4,7 @@ import { z } from "zod";
 import { XMLParser } from "fast-xml-parser";
 import { parse } from "node-html-parser";
 import * as github from "@blink-sdk/github";
+import * as websearch from "@blink-sdk/web-search";
 
 // Types
 type SitemapEntry = {
@@ -97,6 +98,10 @@ Tools and usage
 - page_section: When citing or extracting exact content, fetch the specific section by anchor or heading.
 
 Guidelines
+- Prefer Docs-first answers. Only search GitHub code if the docs are insufficient or the user asks for code-level details.
+- Optimize for speed: return concise, sourced answers quickly. Then ask if the user wants to continue by searching the code.
+- If confidence is low or docs are missing, say so explicitly, provide any partial findings, and ask: "Should I continue by searching the code repositories?"
+- When using web_search, constrain queries to site:coder.com/docs unless explicitly asked to search the broader web.
 - "Docs" means coder.com/docs exclusively; do not search or cite non-coder docs sites.
 - GitHub repos: when a repository is referenced without an owner, assume the owner is the coder org (e.g., "vscode-coder" → "coder/vscode-coder").
 - If a repository isn’t specified at all, assume coder/coder by default.
@@ -108,6 +113,7 @@ Guidelines
 `,
       messages: convertToModelMessages(messages),
       tools: {
+        search_web: websearch.tools.web_search,
         search_docs: tool({
           description:
             "Search Coder Docs via Algolia DocSearch. Mode 'light' returns url/title/snippet only; 'full' returns hierarchy/content/snippet.",
@@ -413,6 +419,9 @@ Guidelines
             github_list_pull_request_files:
               github.tools.list_pull_request_files,
             github_get_issue: github.tools.get_issue,
+            github_list_commits: github.tools.list_commits,
+            github_get_commit: github.tools.get_commit,
+            github_get_commit_diff: github.tools.get_commit_diff,
           },
           { accessToken: process.env.GITHUB_TOKEN },
         ),

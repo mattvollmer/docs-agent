@@ -28,6 +28,7 @@ Tools
   - Inputs: query, page?, hitsPerPage? (default 3, max 5), facetFilters?, filters?, mode? ('light'|'full', default 'light')
   - Returns: mode 'light' → url, title, snippet; mode 'full' → url, hierarchy, content, snippet
   - Env: ALGOLIA_APP_ID, ALGOLIA_SEARCH_KEY, ALGOLIA_INDEX_NAME (default: docs)
+- web_search: General web search (via SDK). Constrain to coder.com/docs by using a site filter (e.g., "site:coder.com/docs your query").
 - sitemap_list: Flatten sitemap (default https://coder.com/sitemap.xml), filtered to /docs.
   - Inputs: sitemapUrl?, include[]?, exclude[]?, limit?
 - page_outline: Fetch title + h1–h3 headings, anchors, and internal links for a page.
@@ -35,11 +36,12 @@ Tools
 - page_section: Extract the content for a specific section by anchor or heading text.
   - Inputs: url (must be coder.com/docs/\*), anchorId?, headingText?, maxChars?
 - GitHub tools (curated subset, keys start with github\_): read-only operations via @blink-sdk/github.
-  - Enabled examples: github_get_repository, github_repository_read_file, github_repository_list_directory, github_repository_grep_file, github_search_repositories, github_search_issues, github_get_pull_request, github_list_pull_request_files, github_get_issue.
+  - Enabled examples: github_get_repository, github_repository_read_file, github_repository_list_directory, github_repository_grep_file, github_search_repositories, github_search_issues, github_get_pull_request, github_list_pull_request_files, github_get_issue, github_list_commits, github_get_commit, github_get_commit_diff.
   - Env: GITHUB_TOKEN (a token with appropriate repo scopes)
 
 Usage guidance
 
+- Docs-first: answer from Docs quickly with links; if confidence is low or docs are insufficient, say so and ask the user if you should continue by searching code.
 - Start with search_docs using mode=light and hitsPerPage ≤ 3 to keep context small; drill in with page_outline and page_section for detail.
 - If search results are weak or empty, use sitemap_list to enumerate pages, then page_outline and page_section.
 - For TOC or navigation-style questions, use sitemap_list and page_outline.
@@ -80,3 +82,5 @@ Changelog
 - Default GitHub owner: assume coder org when owner is omitted
 - GitHub tools: enable a curated read-only subset by default
 - Default repository: assume coder/coder when repo is not specified
+- Add web_search tool (constrain queries to coder.com/docs)
+- Add commit tools: github_list_commits, github_get_commit, github_get_commit_diff
