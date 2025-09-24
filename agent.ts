@@ -5,12 +5,12 @@ import { z } from "zod";
 export default blink.agent({
   async sendMessages({ messages }) {
     return streamText({
-      model: "openai/gpt-oss-120b",
+      model: "openai/gpt-5-mini",
       system: `You are a basic agent the user will customize.
 
 Suggest the user adds tools to the agent. Demonstrate your capabilities with the IP tool.`,
       messages: convertToModelMessages(messages),
-      tools: {        
+      tools: {
         get_ip_info: tool({
           description: "Get IP address information of the computer.",
           inputSchema: z.object({}),
@@ -18,8 +18,8 @@ Suggest the user adds tools to the agent. Demonstrate your capabilities with the
             const response = await fetch("https://ipinfo.io/json");
             return response.json();
           },
-        })
+        }),
       },
-    })
+    });
   },
-})
+});
