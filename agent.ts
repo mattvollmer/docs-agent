@@ -399,11 +399,21 @@ Guidelines
             };
           },
         }),
-        ...blink.tools.prefix(
-          blink.tools.with(github.tools, {
-            accessToken: process.env.GITHUB_TOKEN,
-          }),
-          "github_",
+        ...blink.tools.with(
+          {
+            github_get_repository: github.tools.get_repository,
+            github_repository_read_file: github.tools.repository_read_file,
+            github_repository_list_directory:
+              github.tools.repository_list_directory,
+            github_repository_grep_file: github.tools.repository_grep_file,
+            github_search_repositories: github.tools.search_repositories,
+            github_search_issues: github.tools.search_issues,
+            github_get_pull_request: github.tools.get_pull_request,
+            github_list_pull_request_files:
+              github.tools.list_pull_request_files,
+            github_get_issue: github.tools.get_issue,
+          },
+          { accessToken: process.env.GITHUB_TOKEN },
         ),
       },
     });

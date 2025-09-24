@@ -33,8 +33,8 @@ Tools
   - Inputs: url (must be coder.com/docs/\*)
 - page_section: Extract the content for a specific section by anchor or heading text.
   - Inputs: url (must be coder.com/docs/\*), anchorId?, headingText?, maxChars?
-- GitHub tools (prefixed github\_): read/write operations against GitHub using @blink-sdk/github.
-  - Examples: github_get_repository, github_search_issues, github_search_repositories, github_get_pull_request, github_repository_read_file, github_create_pull_request, github_update_pull_request, github_list_commits, github_get_commit, github_get_commit_diff, github_list_releases, github_actions_list_runs, github_actions_get_job_logs, and more.
+- GitHub tools (curated subset, keys start with github\_): read-only operations via @blink-sdk/github.
+  - Enabled examples: github_get_repository, github_repository_read_file, github_repository_list_directory, github_repository_grep_file, github_search_repositories, github_search_issues, github_get_pull_request, github_list_pull_request_files, github_get_issue.
   - Env: GITHUB_TOKEN (a token with appropriate repo scopes)
 
 Usage guidance
@@ -77,3 +77,4 @@ Changelog
 - search_docs: add mode=light (default) and small hitsPerPage defaults to reduce context size
 - Add GitHub tools (prefixed github\_) via @blink-sdk/github
 - Default GitHub owner: assume coder org when owner is omitted
+- GitHub tools: enable a curated read-only subset by default
