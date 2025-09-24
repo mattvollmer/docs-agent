@@ -7,6 +7,11 @@
     "ai": "^5.0.51",
     "blink": "^0.1.44",
     "esbuild": "^0.25.10",
-    "zod": "^4.1.11"
+    "zod": "^4.1.11",
+    "fast-xml-parser": "^4.4.1",
+    "node-html-parser": "^6.1.12"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
   }
 }
