@@ -4,20 +4,25 @@ import { z } from "zod";
 import { XMLParser } from "fast-xml-parser";
 import { parse } from "node-html-parser";
 
+// Types
+type SitemapEntry = {
+  loc: string;
+  lastmod?: string;
+  changefreq?: string;
+  priority?: number;
+};
+
 async function fetchXml(url: string) {
   const res = await fetch(url, { redirect: "follow" });
   if (!res.ok) throw new Error(`Failed to fetch XML: ${url} (${res.status})`);
   return await res.text();
 }
 
-async function parseSitemap(url: string, seen = new Set<string>()) {
-  if (seen.has(url))
-    return [] as Array<{
-      loc: string;
-      lastmod?: string;
-      changefreq?: string;
-      priority?: number;
-    }>;
+async function parseSitemap(
+  url: string,
+  seen = new Set<string>(),
+): Promise<SitemapEntry[]> {
+  if (seen.has(url)) return [] as SitemapEntry[];
   seen.add(url);
 
   const parser = new XMLParser({ ignoreAttributes: false });
@@ -46,12 +51,7 @@ async function parseSitemap(url: string, seen = new Set<string>()) {
     }));
   }
 
-  return [] as Array<{
-    loc: string;
-    lastmod?: string;
-    changefreq?: string;
-    priority?: number;
-  }>;
+  return [] as SitemapEntry[];
 }
 
 function isDocsUrl(url: string) {
@@ -95,13 +95,20 @@ Suggest the user adds tools to the agent. Demonstrate your capabilities with the
               .optional(),
             filters: z.string().optional(),
           }),
-          execute: async (input) => {
-            const appId = process.env.ALGOLIA_APP_ID;
-            const apiKey = process.env.ALGOLIA_SEARCH_KEY;
-            const indexName = process.env.ALGOLIA_INDEX_NAME ?? "docs";
+          execute: async (input: {
+            query: string;
+            page?: number;
+            hitsPerPage?: number;
+            facetFilters?: (string | string[])[];
+            filters?: string;
+          }) => {
+            const appId = process.env.ALGOLIA_APP_ID as string | undefined;
+            const apiKey = process.env.ALGOLIA_SEARCH_KEY as string | undefined;
+            const indexName =
+              (process.env.ALGOLIA_INDEX_NAME as string | undefined) ?? "docs";
             if (!appId || !apiKey || !indexName) {
               return {
-                available: false,
+                available: false as const,
                 reason:
                   "Missing Algolia env: ALGOLIA_APP_ID, ALGOLIA_SEARCH_KEY, ALGOLIA_INDEX_NAME",
               };
@@ -129,18 +136,18 @@ Suggest the user adds tools to the agent. Demonstrate your capabilities with the
             if (!res.ok) throw new Error(`Algolia error ${res.status}`);
             const data = await res.json();
             return {
-              available: true,
+              available: true as const,
               hits: (data.hits ?? []).map((h: any) => ({
-                url: h.url,
+                url: h.url as string,
                 hierarchy: h.hierarchy,
-                content: h.content,
-                type: h.type,
-                snippet: h._snippetResult?.content?.value,
-                objectID: h.objectID,
+                content: h.content as string | undefined,
+                type: h.type as string | undefined,
+                snippet: h._snippetResult?.content?.value as string | undefined,
+                objectID: h.objectID as string,
               })),
-              page: data.page,
-              nbPages: data.nbPages,
-              nbHits: data.nbHits,
+              page: data.page as number,
+              nbPages: data.nbPages as number,
+              nbHits: data.nbHits as number,
             };
           },
         }),
@@ -153,19 +160,25 @@ Suggest the user adds tools to the agent. Demonstrate your capabilities with the
             exclude: z.array(z.string()).optional(),
             limit: z.number().int().min(1).max(10000).optional(),
           }),
-          execute: async (input) => {
+          execute: async (input: {
+            sitemapUrl?: string;
+            include?: string[];
+            exclude?: string[];
+            limit?: number;
+          }) => {
             const sitemapUrl =
               input.sitemapUrl ?? "https://coder.com/sitemap.xml";
-            let entries = await parseSitemap(sitemapUrl);
-            entries = entries.filter((e) => isDocsUrl(e.loc));
+            let entries: SitemapEntry[] = await parseSitemap(sitemapUrl);
+            entries = entries.filter((e: SitemapEntry) => isDocsUrl(e.loc));
             if (input.include?.length) {
-              entries = entries.filter((e) =>
-                input.include!.some((p) => e.loc.includes(p)),
+              entries = entries.filter((e: SitemapEntry) =>
+                input.include!.some((p: string) => e.loc.includes(p)),
               );
             }
             if (input.exclude?.length) {
               entries = entries.filter(
-                (e) => !input.exclude!.some((p) => e.loc.includes(p)),
+                (e: SitemapEntry) =>
+                  !input.exclude!.some((p: string) => e.loc.includes(p)),
               );
             }
             if (input.limit) entries = entries.slice(0, input.limit);
@@ -176,7 +189,7 @@ Suggest the user adds tools to the agent. Demonstrate your capabilities with the
           description:
             "Fetch a Docs page and return title and outline (h1–h3 + anchors + internal links).",
           inputSchema: z.object({ url: z.string().url() }),
-          execute: async ({ url }) => {
+          execute: async ({ url }: { url: string }) => {
             const res = await fetch(url, { redirect: "follow" });
             if (!res.ok)
               throw new Error(`Failed to fetch page: ${url} (${res.status})`);
@@ -204,7 +217,7 @@ Suggest the user adds tools to the agent. Demonstrate your capabilities with the
             const anchors = root
               .querySelectorAll('a[href^="#"]')
               .map((a) => a.getAttribute("href"))
-              .filter(Boolean);
+              .filter((href): href is string => typeof href === "string");
 
             const internalLinks = root
               .querySelectorAll('a[href^="/"]')
@@ -231,7 +244,17 @@ Suggest the user adds tools to the agent. Demonstrate your capabilities with the
             headingText: z.string().optional(),
             maxChars: z.number().int().min(100).max(20000).optional(),
           }),
-          execute: async ({ url, anchorId, headingText, maxChars }) => {
+          execute: async ({
+            url,
+            anchorId,
+            headingText,
+            maxChars,
+          }: {
+            url: string;
+            anchorId?: string;
+            headingText?: string;
+            maxChars?: number;
+          }) => {
             const res = await fetch(url, { redirect: "follow" });
             if (!res.ok)
               throw new Error(`Failed to fetch page: ${url} (${res.status})`);
@@ -267,7 +290,7 @@ Suggest the user adds tools to the agent. Demonstrate your capabilities with the
 
             if (targetIndex < 0) {
               return {
-                found: false,
+                found: false as const,
                 reason: "Section not found by anchorId or headingText.",
               };
             }
@@ -277,7 +300,7 @@ Suggest the user adds tools to the agent. Demonstrate your capabilities with the
             const codeBlocks: string[] = [];
             const textChunks: string[] = [];
 
-            let node = start.nextElementSibling;
+            let node: any = (start as any).nextElementSibling;
             const maxLen = maxChars ?? 5000;
 
             while (node) {
@@ -301,7 +324,7 @@ Suggest the user adds tools to the agent. Demonstrate your capabilities with the
             }
 
             return {
-              found: true,
+              found: true as const,
               url,
               anchorId:
                 anchorId ??
