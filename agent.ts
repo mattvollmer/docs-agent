@@ -95,6 +95,12 @@ function hierarchyTitle(h: any): string | undefined {
 
 export default blink.agent({
   async sendMessages({ messages, abortSignal }) {
+    // Ensure PDF.js does not attempt to spawn a web worker in this runtime
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const anyPdf: any = pdfjsLib as any;
+    if (anyPdf?.GlobalWorkerOptions) {
+      anyPdf.GlobalWorkerOptions.workerSrc = undefined;
+    }
     messages = messages.map((m) => {
       for (const part of m.parts) {
         if (isToolUIPart(part) && part.state === "output-error") {
