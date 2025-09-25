@@ -30,7 +30,7 @@ async function fetchXml(url: string) {
 
 async function parseSitemap(
   url: string,
-  seen = new Set<string>()
+  seen = new Set<string>(),
 ): Promise<SitemapEntry[]> {
   if (seen.has(url)) return [] as SitemapEntry[];
   seen.add(url);
@@ -44,7 +44,7 @@ async function parseSitemap(
       ? doc.sitemapindex.sitemap
       : [doc.sitemapindex.sitemap];
     const nested = await Promise.all(
-      items.map((s: any) => parseSitemap(s.loc, seen))
+      items.map((s: any) => parseSitemap(s.loc, seen)),
     );
     return nested.flat();
   }
@@ -110,7 +110,7 @@ export default blink.agent({
       system: `You are Blink for Docs — an agent for answering questions about Coder using the official documentation at coder.com/docs.
 
 Tools and usage
-- search_docs (Algolia): Use first for topical queries. Start with mode=light and hitsPerPage ≤ 3; use page_outline/page_section for details. If results are weak or empty, fall back to sitemap.
+- search_docs (Algolia): Use targeted queries first. Start specific ("<topic> coder"), then broaden if needed. Prefer mode=light with hitsPerPage 2–3 for discovery; only use mode=full for complex procedures. Use page_outline only when section structure is unclear.
 - sitemap_list: Enumerate coder.com/docs URLs from the sitemap for coverage or discovery.
 - page_outline: After selecting a page, get title and headings (h1–h3), anchors, and internal links.
 - page_section: When citing or extracting exact content, fetch the specific section by anchor or heading.
@@ -128,6 +128,17 @@ Guidelines
 - If a user asks for a list/TOC/versions, use sitemap_list and page_outline.
 - Keep responses concise and ask for clarification when the query is ambiguous.
 - Avoid speculation; only answer using surfaced docs content.
+
+Search Strategy for Speed
+- Start with targeted queries combining the main topic + "coder" (e.g., "terraform coder", "docker coder").
+- Use search_docs mode=light and hitsPerPage=2–3 initially; only switch to mode=full for complex procedures.
+- If the top hit looks promising, go directly to page_section rather than page_outline.
+
+Quick Decision Tree
+- Technology/integration questions → search "[tech] coder" or "[tech] provider".
+- How-to questions → search the specific action/outcome (e.g., "oidc workspace login").
+- Architecture questions → include keywords like "architecture" or "infrastructure".
+- If the first search gives clear direction, skip outline and go directly to page_section.
 `,
       messages: convertToModelMessages(messages),
       tools: withModelIntent(
@@ -213,13 +224,13 @@ Guidelines
                     "X-Algolia-API-Key": apiKey,
                   },
                   body: JSON.stringify(body),
-                }
+                },
               );
               if (!res.ok) throw new Error(`Algolia error ${res.status}`);
               const data = await res.json();
               const rawHits = (data.hits ?? []) as any[];
               const filtered = rawHits.filter(
-                (h) => typeof h.url === "string" && isDocsUrl(h.url)
+                (h) => typeof h.url === "string" && isDocsUrl(h.url),
               );
 
               const hits =
@@ -229,7 +240,7 @@ Guidelines
                       title: hierarchyTitle(h.hierarchy),
                       snippet: stripHtml(
                         h._snippetResult?.content?.value as string | undefined,
-                        200
+                        200,
                       ),
                       objectID: h.objectID as string,
                     }))
@@ -239,7 +250,7 @@ Guidelines
                       content: h.content as string | undefined,
                       snippet: stripHtml(
                         h._snippetResult?.content?.value as string | undefined,
-                        300
+                        300,
                       ),
                       type: h.type as string | undefined,
                       objectID: h.objectID as string,
@@ -275,13 +286,13 @@ Guidelines
               entries = entries.filter((e: SitemapEntry) => isDocsUrl(e.loc));
               if (input.include?.length) {
                 entries = entries.filter((e: SitemapEntry) =>
-                  input.include!.some((p: string) => e.loc.includes(p))
+                  input.include!.some((p: string) => e.loc.includes(p)),
                 );
               }
               if (input.exclude?.length) {
                 entries = entries.filter(
                   (e: SitemapEntry) =>
-                    !input.exclude!.some((p: string) => e.loc.includes(p))
+                    !input.exclude!.some((p: string) => e.loc.includes(p)),
                 );
               }
               if (input.limit) entries = entries.slice(0, input.limit);
@@ -293,9 +304,6 @@ Guidelines
               "Fetch a Docs page and return title and outline (h1–h3 + anchors + internal links).",
             inputSchema: z.object({ url: z.string().url() }),
             execute: async ({ url }: { url: string }) => {
-              if (!isDocsUrl(url)) {
-                throw new Error("Only coder.com/docs URLs are supported");
-              }
               const res = await fetch(url, { redirect: "follow" });
               if (!res.ok)
                 throw new Error(`Failed to fetch page: ${url} (${res.status})`);
@@ -466,7 +474,7 @@ Guidelines
               github_get_commit_diff: github.tools.get_commit_diff,
               github_search_code: github.tools.search_code,
             },
-            { accessToken: process.env.GITHUB_TOKEN }
+            { accessToken: process.env.GITHUB_TOKEN },
           ),
         },
         {
@@ -489,7 +497,7 @@ Guidelines
               });
             } catch {}
           },
-        }
+        },
       ),
       experimental_transform: smoothStream(),
     });
