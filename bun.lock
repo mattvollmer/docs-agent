@@ -4,15 +4,15 @@
     "": {
       "name": "docs-agent",
       "dependencies": {
-        "@blink-sdk/github": "^0.0.9",
+        "@blink-sdk/github": "0.0.10",
         "@blink-sdk/model-intent": "^0.0.4",
         "@blink-sdk/slackbot": "^0.0.8",
         "@blink-sdk/web-search": "^0.0.3",
-        "ai": "^5.0.51",
-        "blink": "^0.1.45",
+        "ai": "^5.0.52",
+        "blink": "^0.1.49",
         "esbuild": "^0.25.10",
-        "fast-xml-parser": "^4.4.1",
-        "node-html-parser": "^6.1.12",
+        "fast-xml-parser": "^4.5.3",
+        "node-html-parser": "^6.1.13",
         "zod": "^4.1.11",
       },
       "devDependencies": {
@@ -22,13 +22,13 @@
     },
   },
   "packages": {
-    "@ai-sdk/gateway": ["@ai-sdk/gateway@1.0.28", "", { "dependencies": { "@ai-sdk/provider": "2.0.0", "@ai-sdk/provider-utils": "3.0.9" }, "peerDependencies": { "zod": "^3.25.76 || ^4" } }, "sha512-e9RKgWVDYHsd4UkKCgKQpK+nxLSDydN18yXctzgNlmf2R7BR+HqUsTKJdZT6ArSoXBWBGhyZss0cJJnpm6YVfw=="],
+    "@ai-sdk/gateway": ["@ai-sdk/gateway@1.0.29", "", { "dependencies": { "@ai-sdk/provider": "2.0.0", "@ai-sdk/provider-utils": "3.0.9" }, "peerDependencies": { "zod": "^3.25.76 || ^4" } }, "sha512-o9LtmBiG2WAgs3GAmL79F8idan/UupxHG8Tyr2gP4aUSOzflM0bsvfzozBp8x6WatQnOx+Pio7YNw45Y6I16iw=="],
 
     "@ai-sdk/provider": ["@ai-sdk/provider@2.0.0", "", { "dependencies": { "json-schema": "^0.4.0" } }, "sha512-6o7Y2SeO9vFKB8lArHXehNuusnpddKPk7xqL7T2/b+OvXMRIXUO1rR4wcv1hAFUAT9avGZshty3Wlua/XA7TvA=="],
 
     "@ai-sdk/provider-utils": ["@ai-sdk/provider-utils@3.0.9", "", { "dependencies": { "@ai-sdk/provider": "2.0.0", "@standard-schema/spec": "^1.0.0", "eventsource-parser": "^3.0.5" }, "peerDependencies": { "zod": "^3.25.76 || ^4" } }, "sha512-Pm571x5efqaI4hf9yW4KsVlDBDme8++UepZRnq+kqVBWWjgvGhQlzU8glaFq0YJEB9kkxZHbRRyVeHoV2sRYaQ=="],
 
-    "@blink-sdk/github": ["@blink-sdk/github@0.0.9", "", { "peerDependencies": { "@octokit/core": "^7.0.4", "ai": ">=5", "zod": ">=4" } }, "sha512-w7GBdjI+9fvgleWf309kCnZn1lkbF/5sepxeTUEwF4CKd+hUqEF+am5c6nUQG2rNIb59zlB0pW68+Gz0OB0MPA=="],
+    "@blink-sdk/github": ["@blink-sdk/github@0.0.10", "", { "peerDependencies": { "@octokit/core": "^7.0.4", "ai": ">=5", "zod": ">=4" } }, "sha512-hCmHS0xYAElchpBHqfekA7MXmplJ+kUTEFW1ph++bj59jreSp/GhLIGHloKGW1J6sWjdowwzHrY57bIDXmlplA=="],
 
     "@blink-sdk/model-intent": ["@blink-sdk/model-intent@0.0.4", "", { "peerDependencies": { "ai": ">=5", "zod": ">=4" } }, "sha512-iZIUIEBZB2S0NX6aSXRy8GthVy88aeXb2nwy6goM3aFRsHF/Z/81y+Bmj3Rli+9l8CwrvUh/Xf0NCnYUK5quUg=="],
 
@@ -110,11 +110,11 @@
 
     "@types/node": ["@types/node@24.5.2", "", { "dependencies": { "undici-types": "~7.12.0" } }, "sha512-FYxk1I7wPv3K2XBaoyH2cTnocQEu8AOZ60hPbsyukMPLv5/5qr7V1i8PLHdl6Zf87I+xZXFvPCXYjiTFq+YSDQ=="],
 
-    "ai": ["ai@5.0.51", "", { "dependencies": { "@ai-sdk/gateway": "1.0.28", "@ai-sdk/provider": "2.0.0", "@ai-sdk/provider-utils": "3.0.9", "@opentelemetry/api": "1.9.0" }, "peerDependencies": { "zod": "^3.25.76 || ^4" } }, "sha512-ToKW099QWUJNqePZbWGg8FSfxTxS3UN9U6yCla8rYdW0EBTDNPnpRwK1N6ER9TfV+dFtdUu+ZgKSlhQnEThriQ=="],
+    "ai": ["ai@5.0.52", "", { "dependencies": { "@ai-sdk/gateway": "1.0.29", "@ai-sdk/provider": "2.0.0", "@ai-sdk/provider-utils": "3.0.9", "@opentelemetry/api": "1.9.0" }, "peerDependencies": { "zod": "^3.25.76 || ^4" } }, "sha512-GLlRHjMlvN9+w7UYGxCpUQ8GgCRv5Z+JCprRH3Q8YbXJ/JyIc6EP9+YRUmQsyExX/qQsuehe7y/LLygarbSTOw=="],
 
     "before-after-hook": ["before-after-hook@4.0.0", "", {}, "sha512-q6tR3RPqIB1pMiTRMFcZwuG5T8vwp+vUvEG0vuI6B+Rikh5BfPp2fQ82c925FOs+b0lcFQ8CFrL+KbilfZFhOQ=="],
 
-    "blink": ["blink@0.1.45", "", { "dependencies": { "zod": "^4.1.5" }, "optionalDependencies": { "esbuild": "^0.25.9" }, "bin": { "blink": "dist/cli/index.js" } }, "sha512-3X/DYDZNgLgb1QEUqi+TsNciTe6suRSFAqpn3o1Gy8EHLoy2BMsl+bzDDKsOcC888UmswbAxwF7BXNunf6U9ng=="],
+    "blink": ["blink@0.1.49", "", { "dependencies": { "zod": "^4.1.5" }, "optionalDependencies": { "esbuild": "^0.25.9" }, "bin": { "blink": "dist/cli/index.js" } }, "sha512-gE+76BfYEgixsXKN1eTdCR26WtSuozQsG6Fq8vGrEzqsj0BQHxccRyZ44ZaQZ8XY9/+6Yo+4E948Il9nkzKCqg=="],
 
     "boolbase": ["boolbase@1.0.0", "", {}, "sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww=="],
 
