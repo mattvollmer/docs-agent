@@ -14,7 +14,6 @@ import * as websearch from "@blink-sdk/web-search";
 import * as slackbot from "@blink-sdk/slackbot";
 import withModelIntent from "@blink-sdk/model-intent";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
-import pdfParse from "pdf-parse";
 
 // Types
 type SitemapEntry = {
@@ -519,17 +518,46 @@ Guidelines
             },
           }),
           pdf_read_pdf: tool({
-            description: "Read a PDF and return its text content.",
-            inputSchema: z.object({ url: z.string().url() }),
-            execute: async ({ url }: { url: string }) => {
+            description:
+              "Read a PDF and return its text content (bounded by maxPages and maxChars).",
+            inputSchema: z.object({
+              url: z.string().url(),
+              maxPages: z.number().int().min(1).max(50).optional(),
+              maxChars: z.number().int().min(100).max(20000).optional(),
+            }),
+            execute: async ({
+              url,
+              maxPages,
+              maxChars,
+            }: {
+              url: string;
+              maxPages?: number;
+              maxChars?: number;
+            }) => {
               const res = await fetch(url, { redirect: "follow" });
               if (!res.ok)
                 throw new Error(`Failed to fetch PDF: ${url} (${res.status})`);
               const buffer = await res.arrayBuffer();
-              const data = await pdfParse(buffer);
+              const pdf = await pdfjsLib.getDocument({
+                data: new Uint8Array(buffer),
+              }).promise;
+              const limitPages = Math.min(maxPages ?? 10, pdf.numPages);
+              let text = "";
+              for (let p = 1; p <= limitPages; p++) {
+                const page = await pdf.getPage(p);
+                const content = await page.getTextContent();
+                const pageText = content.items
+                  .map((it: any) => it.str ?? "")
+                  .join(" ");
+                text += (text ? "\n\n" : "") + `\n[Page ${p}]\n` + pageText;
+              }
+              const limit = Math.min(maxChars ?? 20000, text.length);
               return {
                 url,
-                text: data.text,
+                numPages: pdf.numPages,
+                pagesRead: limitPages,
+                chars: limit,
+                text: text.slice(0, limit),
               };
             },
           }),
