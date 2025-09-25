@@ -30,7 +30,7 @@ async function fetchXml(url: string) {
 
 async function parseSitemap(
   url: string,
-  seen = new Set<string>()
+  seen = new Set<string>(),
 ): Promise<SitemapEntry[]> {
   if (seen.has(url)) return [] as SitemapEntry[];
   seen.add(url);
@@ -44,7 +44,7 @@ async function parseSitemap(
       ? doc.sitemapindex.sitemap
       : [doc.sitemapindex.sitemap];
     const nested = await Promise.all(
-      items.map((s: any) => parseSitemap(s.loc, seen))
+      items.map((s: any) => parseSitemap(s.loc, seen)),
     );
     return nested.flat();
   }
@@ -213,13 +213,13 @@ Guidelines
                     "X-Algolia-API-Key": apiKey,
                   },
                   body: JSON.stringify(body),
-                }
+                },
               );
               if (!res.ok) throw new Error(`Algolia error ${res.status}`);
               const data = await res.json();
               const rawHits = (data.hits ?? []) as any[];
               const filtered = rawHits.filter(
-                (h) => typeof h.url === "string" && isDocsUrl(h.url)
+                (h) => typeof h.url === "string" && isDocsUrl(h.url),
               );
 
               const hits =
@@ -229,7 +229,7 @@ Guidelines
                       title: hierarchyTitle(h.hierarchy),
                       snippet: stripHtml(
                         h._snippetResult?.content?.value as string | undefined,
-                        200
+                        200,
                       ),
                       objectID: h.objectID as string,
                     }))
@@ -239,7 +239,7 @@ Guidelines
                       content: h.content as string | undefined,
                       snippet: stripHtml(
                         h._snippetResult?.content?.value as string | undefined,
-                        300
+                        300,
                       ),
                       type: h.type as string | undefined,
                       objectID: h.objectID as string,
@@ -275,13 +275,13 @@ Guidelines
               entries = entries.filter((e: SitemapEntry) => isDocsUrl(e.loc));
               if (input.include?.length) {
                 entries = entries.filter((e: SitemapEntry) =>
-                  input.include!.some((p: string) => e.loc.includes(p))
+                  input.include!.some((p: string) => e.loc.includes(p)),
                 );
               }
               if (input.exclude?.length) {
                 entries = entries.filter(
                   (e: SitemapEntry) =>
-                    !input.exclude!.some((p: string) => e.loc.includes(p))
+                    !input.exclude!.some((p: string) => e.loc.includes(p)),
                 );
               }
               if (input.limit) entries = entries.slice(0, input.limit);
@@ -293,9 +293,6 @@ Guidelines
               "Fetch a Docs page and return title and outline (h1–h3 + anchors + internal links).",
             inputSchema: z.object({ url: z.string().url() }),
             execute: async ({ url }: { url: string }) => {
-              if (!isDocsUrl(url)) {
-                throw new Error("Only coder.com/docs URLs are supported");
-              }
               const res = await fetch(url, { redirect: "follow" });
               if (!res.ok)
                 throw new Error(`Failed to fetch page: ${url} (${res.status})`);
@@ -466,7 +463,7 @@ Guidelines
               github_get_commit_diff: github.tools.get_commit_diff,
               github_search_code: github.tools.search_code,
             },
-            { accessToken: process.env.GITHUB_TOKEN }
+            { accessToken: process.env.GITHUB_TOKEN },
           ),
         },
         {
@@ -489,7 +486,7 @@ Guidelines
               });
             } catch {}
           },
-        }
+        },
       ),
       experimental_transform: smoothStream(),
     });
