@@ -13,6 +13,7 @@ import * as github from "@blink-sdk/github";
 import * as websearch from "@blink-sdk/web-search";
 import * as slackbot from "@blink-sdk/slackbot";
 import withModelIntent from "@blink-sdk/model-intent";
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 
 // Types
 type SitemapEntry = {
@@ -30,7 +31,7 @@ async function fetchXml(url: string) {
 
 async function parseSitemap(
   url: string,
-  seen = new Set<string>()
+  seen = new Set<string>(),
 ): Promise<SitemapEntry[]> {
   if (seen.has(url)) return [] as SitemapEntry[];
   seen.add(url);
@@ -44,7 +45,7 @@ async function parseSitemap(
       ? doc.sitemapindex.sitemap
       : [doc.sitemapindex.sitemap];
     const nested = await Promise.all(
-      items.map((s: any) => parseSitemap(s.loc, seen))
+      items.map((s: any) => parseSitemap(s.loc, seen)),
     );
     return nested.flat();
   }
@@ -213,13 +214,13 @@ Guidelines
                     "X-Algolia-API-Key": apiKey,
                   },
                   body: JSON.stringify(body),
-                }
+                },
               );
               if (!res.ok) throw new Error(`Algolia error ${res.status}`);
               const data = await res.json();
               const rawHits = (data.hits ?? []) as any[];
               const filtered = rawHits.filter(
-                (h) => typeof h.url === "string" && isDocsUrl(h.url)
+                (h) => typeof h.url === "string" && isDocsUrl(h.url),
               );
 
               const hits =
@@ -229,7 +230,7 @@ Guidelines
                       title: hierarchyTitle(h.hierarchy),
                       snippet: stripHtml(
                         h._snippetResult?.content?.value as string | undefined,
-                        200
+                        200,
                       ),
                       objectID: h.objectID as string,
                     }))
@@ -239,7 +240,7 @@ Guidelines
                       content: h.content as string | undefined,
                       snippet: stripHtml(
                         h._snippetResult?.content?.value as string | undefined,
-                        300
+                        300,
                       ),
                       type: h.type as string | undefined,
                       objectID: h.objectID as string,
@@ -275,13 +276,13 @@ Guidelines
               entries = entries.filter((e: SitemapEntry) => isDocsUrl(e.loc));
               if (input.include?.length) {
                 entries = entries.filter((e: SitemapEntry) =>
-                  input.include!.some((p: string) => e.loc.includes(p))
+                  input.include!.some((p: string) => e.loc.includes(p)),
                 );
               }
               if (input.exclude?.length) {
                 entries = entries.filter(
                   (e: SitemapEntry) =>
-                    !input.exclude!.some((p: string) => e.loc.includes(p))
+                    !input.exclude!.some((p: string) => e.loc.includes(p)),
                 );
               }
               if (input.limit) entries = entries.slice(0, input.limit);
@@ -448,6 +449,74 @@ Guidelines
               };
             },
           }),
+          pdf_get_info: tool({
+            description: "Get basic info for a PDF (numPages, fingerprint).",
+            inputSchema: z.object({ url: z.string().url() }),
+            execute: async ({ url }: { url: string }) => {
+              const res = await fetch(url, { redirect: "follow" });
+              if (!res.ok)
+                throw new Error(`Failed to fetch PDF: ${url} (${res.status})`);
+              const buffer = await res.arrayBuffer();
+              const pdf = await pdfjsLib.getDocument({
+                data: new Uint8Array(buffer),
+              }).promise;
+              return {
+                url,
+                numPages: pdf.numPages,
+                fingerprint: pdf.fingerprints?.[0],
+              };
+            },
+          }),
+          pdf_read_chunk: tool({
+            description:
+              "Read a chunk of pages from a PDF by URL. Returns concatenated text for the range.",
+            inputSchema: z.object({
+              url: z.string().url(),
+              startPage: z.number().int().min(1),
+              pageCount: z.number().int().min(1).max(20),
+              maxChars: z.number().int().min(100).max(20000).optional(),
+            }),
+            execute: async ({
+              url,
+              startPage,
+              pageCount,
+              maxChars,
+            }: {
+              url: string;
+              startPage: number;
+              pageCount: number;
+              maxChars?: number;
+            }) => {
+              const res = await fetch(url, { redirect: "follow" });
+              if (!res.ok)
+                throw new Error(`Failed to fetch PDF: ${url} (${res.status})`);
+              const buffer = await res.arrayBuffer();
+              const pdf = await pdfjsLib.getDocument({
+                data: new Uint8Array(buffer),
+              }).promise;
+              const numPages = pdf.numPages;
+              const from = Math.max(1, startPage);
+              const to = Math.min(numPages, from + pageCount - 1);
+              let text = "";
+              for (let p = from; p <= to; p++) {
+                const page = await pdf.getPage(p);
+                const content = await page.getTextContent();
+                const pageText = content.items
+                  .map((it: any) => it.str ?? "")
+                  .join(" ");
+                text += (text ? "\n\n" : "") + `\n[Page ${p}]\n` + pageText;
+              }
+              const limit = Math.min(maxChars ?? 20000, text.length);
+              return {
+                url,
+                startPage: from,
+                endPage: to,
+                numPages,
+                chars: limit,
+                text: text.slice(0, limit),
+              };
+            },
+          }),
           ...blink.tools.with(
             {
               github_get_repository: github.tools.get_repository,
@@ -466,7 +535,7 @@ Guidelines
               github_get_commit_diff: github.tools.get_commit_diff,
               github_search_code: github.tools.search_code,
             },
-            { accessToken: process.env.GITHUB_TOKEN }
+            { accessToken: process.env.GITHUB_TOKEN },
           ),
         },
         {
@@ -489,7 +558,7 @@ Guidelines
               });
             } catch {}
           },
-        }
+        },
       ),
       experimental_transform: smoothStream(),
     });
