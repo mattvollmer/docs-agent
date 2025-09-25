@@ -169,6 +169,11 @@ Quick GitHub Search Decision Tree
   - Fetch details with github_get_issue / github_get_pull_request; cite links and summarize status (open/closed, merged, last update)
 - Respect repo hints from the user; otherwise assume coder/coder. Ask to confirm before expanding scope.
 - After summarizing, ask if the user wants deeper code investigation.
+
+Tool-calling
+- IMPORTANT: Leverage parallel tool calls to maximize efficiency. When tasks are independent, send multiple tool calls in one step.
+- IMPORTANT: Provide "model_intent" in EVERY tool call as a short present-participle phrase (<100 chars), no underscores (e.g., "searching docs for terraform setup").
+- Use GitHub tools for read-only repo work; use Workspace tools for writes or execution.
 `,
       messages: convertToModelMessages(messages),
       tools: withModelIntent(
