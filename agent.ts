@@ -14,6 +14,7 @@ import * as websearch from "@blink-sdk/web-search";
 import * as slackbot from "@blink-sdk/slackbot";
 import withModelIntent from "@blink-sdk/model-intent";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+import pdfParse from "pdf-parse";
 
 // Types
 type SitemapEntry = {
@@ -514,6 +515,21 @@ Guidelines
                 numPages,
                 chars: limit,
                 text: text.slice(0, limit),
+              };
+            },
+          }),
+          pdf_read_pdf: tool({
+            description: "Read a PDF and return its text content.",
+            inputSchema: z.object({ url: z.string().url() }),
+            execute: async ({ url }: { url: string }) => {
+              const res = await fetch(url, { redirect: "follow" });
+              if (!res.ok)
+                throw new Error(`Failed to fetch PDF: ${url} (${res.status})`);
+              const buffer = await res.arrayBuffer();
+              const data = await pdfParse(buffer);
+              return {
+                url,
+                text: data.text,
               };
             },
           }),
