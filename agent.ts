@@ -30,7 +30,7 @@ async function fetchXml(url: string) {
 
 async function parseSitemap(
   url: string,
-  seen = new Set<string>()
+  seen = new Set<string>(),
 ): Promise<SitemapEntry[]> {
   if (seen.has(url)) return [] as SitemapEntry[];
   seen.add(url);
@@ -44,7 +44,7 @@ async function parseSitemap(
       ? doc.sitemapindex.sitemap
       : [doc.sitemapindex.sitemap];
     const nested = await Promise.all(
-      items.map((s: any) => parseSitemap(s.loc, seen))
+      items.map((s: any) => parseSitemap(s.loc, seen)),
     );
     return nested.flat();
   }
@@ -139,6 +139,15 @@ Quick Decision Tree
 - How-to questions → search the specific action/outcome (e.g., "oidc workspace login").
 - Architecture questions → include keywords like "architecture" or "infrastructure".
 - If the first search gives clear direction, skip outline and go directly to page_section.
+
+Issues/PRs Investigation (consented)
+- Not default. If the user asks "is this broken?", "is this being changed?", "is there a fix?", or mentions a bug/feature/PR/issue, ask: "Do you want me to check recent GitHub issues and pull requests to confirm status?"
+- On consent, quickly scan issues/PRs (limit 3–5) using the curated tools (defaults: owner=cod er, repo=coder/coder):
+  - Issues: search keywords from the question + labels [bug, regression, deprecation, feature, enhancement], prefer updated:recent
+  - PRs: search keywords + is:pr, prefer open first, then recently merged/closed
+  - Fetch details with github_get_issue / github_get_pull_request; cite links and summarize status (open/closed, merged, last update)
+- Respect repo hints from the user; otherwise assume coder/coder. Ask to confirm before expanding scope.
+- After summarizing, ask if the user wants deeper code investigation.
 `,
       messages: convertToModelMessages(messages),
       tools: withModelIntent(
@@ -224,13 +233,13 @@ Quick Decision Tree
                     "X-Algolia-API-Key": apiKey,
                   },
                   body: JSON.stringify(body),
-                }
+                },
               );
               if (!res.ok) throw new Error(`Algolia error ${res.status}`);
               const data = await res.json();
               const rawHits = (data.hits ?? []) as any[];
               const filtered = rawHits.filter(
-                (h) => typeof h.url === "string" && isDocsUrl(h.url)
+                (h) => typeof h.url === "string" && isDocsUrl(h.url),
               );
 
               const hits =
@@ -240,7 +249,7 @@ Quick Decision Tree
                       title: hierarchyTitle(h.hierarchy),
                       snippet: stripHtml(
                         h._snippetResult?.content?.value as string | undefined,
-                        200
+                        200,
                       ),
                       objectID: h.objectID as string,
                     }))
@@ -250,7 +259,7 @@ Quick Decision Tree
                       content: h.content as string | undefined,
                       snippet: stripHtml(
                         h._snippetResult?.content?.value as string | undefined,
-                        300
+                        300,
                       ),
                       type: h.type as string | undefined,
                       objectID: h.objectID as string,
@@ -286,13 +295,13 @@ Quick Decision Tree
               entries = entries.filter((e: SitemapEntry) => isDocsUrl(e.loc));
               if (input.include?.length) {
                 entries = entries.filter((e: SitemapEntry) =>
-                  input.include!.some((p: string) => e.loc.includes(p))
+                  input.include!.some((p: string) => e.loc.includes(p)),
                 );
               }
               if (input.exclude?.length) {
                 entries = entries.filter(
                   (e: SitemapEntry) =>
-                    !input.exclude!.some((p: string) => e.loc.includes(p))
+                    !input.exclude!.some((p: string) => e.loc.includes(p)),
                 );
               }
               if (input.limit) entries = entries.slice(0, input.limit);
@@ -474,7 +483,7 @@ Quick Decision Tree
               github_get_commit_diff: github.tools.get_commit_diff,
               github_search_code: github.tools.search_code,
             },
-            { accessToken: process.env.GITHUB_TOKEN }
+            { accessToken: process.env.GITHUB_TOKEN },
           ),
         },
         {
@@ -497,7 +506,7 @@ Quick Decision Tree
               });
             } catch {}
           },
-        }
+        },
       ),
       experimental_transform: smoothStream(),
     });
