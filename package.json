@@ -9,7 +9,7 @@
     "@blink-sdk/slackbot": "^0.0.9",
     "@blink-sdk/web-search": "^0.0.3",
     "ai": "^5.0.52",
-    "blink": "^0.1.49",
+    "blink": "^0.1.50",
     "esbuild": "^0.25.10",
     "fast-xml-parser": "^4.5.3",
     "node-html-parser": "^6.1.13",

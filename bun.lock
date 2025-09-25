@@ -114,7 +114,7 @@
 
     "before-after-hook": ["before-after-hook@4.0.0", "", {}, "sha512-q6tR3RPqIB1pMiTRMFcZwuG5T8vwp+vUvEG0vuI6B+Rikh5BfPp2fQ82c925FOs+b0lcFQ8CFrL+KbilfZFhOQ=="],
 
-    "blink": ["blink@0.1.49", "", { "dependencies": { "zod": "^4.1.5" }, "optionalDependencies": { "esbuild": "^0.25.9" }, "bin": { "blink": "dist/cli/index.js" } }, "sha512-gE+76BfYEgixsXKN1eTdCR26WtSuozQsG6Fq8vGrEzqsj0BQHxccRyZ44ZaQZ8XY9/+6Yo+4E948Il9nkzKCqg=="],
+    "blink": ["blink@0.1.50", "", { "dependencies": { "zod": "^4.1.5" }, "optionalDependencies": { "esbuild": "^0.25.9" }, "bin": { "blink": "dist/cli/index.js" } }, "sha512-7p4wZtQk+v+fHUceWbl+75F2sNvb+70/GJbOuxSZEptTUP4dUl4w6XVHc+/z/iMwM4t7YLGrdn2T5whEubaFUA=="],
 
     "boolbase": ["boolbase@1.0.0", "", {}, "sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww=="],
 
