@@ -167,6 +167,15 @@ Quick GitHub Search Decision Tree
 - Respect repo hints from the user; otherwise assume coder/coder. Ask to confirm before expanding scope.
 - After summarizing, ask if the user wants deeper code investigation.
 
+Multi-repo GitHub Expansion (consented)
+- Default to repo=coder/coder unless the user specifies otherwise.
+- If signals indicate a dependency/library/component (e.g., CLI subcommands, module names, error paths like cgroup/clistat), ask: "Should I expand to related repos in the coder org?"
+- On consent:
+  - Run a broad org scan first: repo:coder/* <main-topic> is:issue|is:pr (sort: updated desc) and scan 3–5 items
+  - Then run targeted searches in candidate repos (e.g., coder/clistat for cgroup stats)
+  - Consider timeframe breadth (recent and historical) before concluding
+- Treat closed in one repo ≠ resolved globally; check for related open items in adjacent repos
+
 Tool-calling
 - IMPORTANT: Leverage parallel tool calls to maximize efficiency. When tasks are independent, send multiple tool calls in one step.
 - IMPORTANT: Provide "model_intent" in EVERY tool call as a short present-participle phrase (<100 chars), no underscores (e.g., "searching docs for terraform setup").
