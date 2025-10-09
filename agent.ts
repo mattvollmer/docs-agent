@@ -14,6 +14,12 @@ import * as websearch from "@blink-sdk/web-search";
 import * as slackbot from "@blink-sdk/slackbot";
 import withModelIntent from "@blink-sdk/model-intent";
 
+function requireEnv(name: string): string {
+  const v = process.env[name];
+  if (!v) throw new Error(`${name} is required`);
+  return v;
+}
+
 // Types
 type SitemapEntry = {
   loc: string;
@@ -459,7 +465,7 @@ Stop/Ask Rule
           };
         },
       }),
-      ...blink.tools.with(
+      ...blink.tools.withContext(
         {
           github_get_repository: github.tools.get_repository,
           github_repository_read_file: github.tools.repository_read_file,
@@ -476,7 +482,7 @@ Stop/Ask Rule
           github_get_commit_diff: github.tools.get_commit_diff,
           github_search_code: github.tools.search_code,
         },
-        { accessToken: process.env.GITHUB_TOKEN },
+        { accessToken: requireEnv("GITHUB_TOKEN") },
       ),
     },
     {
