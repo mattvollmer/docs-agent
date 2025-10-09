@@ -1,5 +1,5 @@
 {
-  "name": "docs-agent",
+  "name": "CoderAssist",
   "main": "agent.ts",
   "type": "module",
   "private": true,
