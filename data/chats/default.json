@@ -1,23 +1,23 @@
 {
   "id": "default",
-  "created_at": "2025-10-09T18:00:28.869Z",
-  "updated_at": "2025-10-09T18:01:46.827Z",
+  "created_at": "2025-10-09T18:08:37.281Z",
+  "updated_at": "2025-10-09T18:09:56.204Z",
   "messages": [
     {
-      "created_at": "2025-10-09T18:00:28.869Z",
-      "id": "8787c3da-253f-4084-a511-d38e41781428",
+      "created_at": "2025-10-09T18:08:37.281Z",
+      "id": "d6287ef2-464f-487d-98f8-417ba169867f",
       "role": "user",
       "parts": [
         {
           "type": "text",
-          "text": "who are you"
+          "text": "how do you compare to Blink?"
         }
       ],
       "mode": "run"
     },
     {
-      "id": "8b1c2eb2-4d4e-4979-b698-10a7710e2c21",
-      "created_at": "2025-10-09T18:00:34.411Z",
+      "id": "45222482-f3eb-42bc-b834-7e0e3528e619",
+      "created_at": "2025-10-09T18:08:46.936Z",
       "role": "assistant",
       "parts": [
         {
@@ -25,42 +25,42 @@
         },
         {
           "type": "text",
-          "text": "I'm Coder Assist — an AI agent that helps answer questions about Coder, the cloud development environment platform. I'm here to help you with:\n\n- **Coder documentation and features** - I can search through Coder's docs to find specific information about setup, configuration, templates, and usage\n- **Technical troubleshooting** - I can help diagnose issues and find solutions in the documentation or GitHub issues\n- **Implementation guidance** - Whether you're evaluating Coder or already using it, I can help with best practices and configurations\n\nI have access to Coder's documentation, GitHub repositories, and can search for relevant issues and pull requests to give you the most current and accurate information.\n\nWhat would you like to know about Coder?",
+          "text": "I *am* built using Blink! Blink is Coder's experimental agent development engine that powers me (Coder Assist). So rather than comparing to Blink, I'm actually an example of what Blink can create.\n\nHere's how I work as a Blink-powered agent:\n\n**My Design Philosophy:**\n- **Docs-first approach**: I prioritize searching Coder's documentation before expanding to other sources\n- **Fast and precise retrieval**: I aim to get you targeted information quickly rather than overwhelming you with everything\n- **Transparent about confidence**: I'll tell you when I'm uncertain and suggest next steps\n\n**My Available Tools:**\n- Documentation search and retrieval (search_docs, page_outline, page_section)\n- Web search capabilities \n- GitHub repository analysis (reading files, searching issues/PRs, analyzing commits)\n- Sitemap navigation for structured content discovery\n\n**My Workflow:**\n1. Start with targeted documentation searches\n2. If needed, expand to GitHub issues/PRs to check for known problems or recent changes\n3. Use multi-step reasoning: broad searches → targeted queries → synthesis\n4. Always cite exact sources and provide confidence levels\n\n**Decision-Making Process:**\nI follow a \"two-hop rule\" - after a couple of search attempts, if I'm not confident in my answer, I'll ask you which direction you'd like me to explore deeper (more docs, GitHub issues, or code examination).\n\nIs there something specific about Blink's capabilities or my functionality that you'd like to understand better?",
           "state": "done"
         }
       ],
       "mode": "run",
       "metadata": {
         "usage": {
-          "inputTokens": 5024,
-          "outputTokens": 168,
-          "totalTokens": 5192,
+          "inputTokens": 5082,
+          "outputTokens": 346,
+          "totalTokens": 5428,
           "cachedInputTokens": 0
         },
         "model": "claude-sonnet-4-20250514",
         "totalUsage": {
-          "inputTokens": 5024,
-          "outputTokens": 168,
-          "totalTokens": 5192,
+          "inputTokens": 5082,
+          "outputTokens": 346,
+          "totalTokens": 5428,
           "cachedInputTokens": 0
         }
       }
     },
     {
-      "created_at": "2025-10-09T18:00:43.815Z",
-      "id": "1d0e1ca4-53dd-4002-8853-724caf4f9a11",
+      "created_at": "2025-10-09T18:09:29.806Z",
+      "id": "bd471656-59a1-4038-b76e-580640efa62b",
       "role": "user",
       "parts": [
         {
           "type": "text",
-          "text": "are you like Blink?"
+          "text": "test your algolia tools"
         }
       ],
       "mode": "run"
     },
     {
-      "id": "9efc4a99-0a2e-471d-be8b-c520d45ed301",
-      "created_at": "2025-10-09T18:00:47.243Z",
+      "id": "c30afb58-bbe6-47ab-9b1f-9b18d7366890",
+      "created_at": "2025-10-09T18:09:36.747Z",
       "role": "assistant",
       "parts": [
         {
@@ -68,42 +68,118 @@
         },
         {
           "type": "text",
-          "text": "I am built using Coder's experimental agent development engine named Blink, but I'm specifically designed as Coder Assist to help with Coder-related questions and support.\n\nIs there something specific about Coder that I can help you with today? I can assist with documentation, troubleshooting, setup questions, or any other Coder-related topics you might have.",
+          "text": "I'll test my Algolia documentation search tools by running a few different types of queries to show you how they work.",
           "state": "done"
+        },
+        {
+          "type": "tool-search_docs",
+          "toolCallId": "toolu_01QEk5uAyx5KnbvzpZzZPd2Z",
+          "state": "output-available",
+          "input": {
+            "model_intent": "testing light mode search for installation topics",
+            "properties": {
+              "query": "installation coder",
+              "hitsPerPage": 3,
+              "mode": "light"
+            }
+          },
+          "output": {
+            "available": true,
+            "hits": [
+              {
+                "url": "https://coder.com/docs/@main/user-guides/desktop#installation",
+                "title": "Coder Desktop",
+                "objectID": "983496f6301ca95b83dd771de56ee1fe8a2319df"
+              },
+              {
+                "url": "https://coder.com/docs/@main/reference/api/schemas#codersdkexternalauthappinstallation",
+                "title": "Schemas",
+                "objectID": "400de900388fd9f00fcc03d28a6a89cbf3aaff2f"
+              },
+              {
+                "url": "https://coder.com/docs/@main/user-guides/desktop#what-youll-need",
+                "title": "Coder Desktop",
+                "snippet": "Administrator privileges on your local machine (for VPN extension installation)",
+                "objectID": "d47d33997549dbfba28f957b4394cb88a5e39bfa"
+              }
+            ],
+            "page": 0,
+            "nbPages": 14,
+            "nbHits": 42
+          }
+        },
+        {
+          "type": "tool-search_docs",
+          "toolCallId": "toolu_017vQxZPz1nr2u11cggNPKAv",
+          "state": "output-available",
+          "input": {
+            "model_intent": "testing full mode search for workspace configuration",
+            "properties": {
+              "query": "workspace templates",
+              "hitsPerPage": 2,
+              "mode": "full"
+            }
+          },
+          "output": {
+            "available": true,
+            "hits": [
+              {
+                "url": "https://coder.com/docs/@main/tutorials/best-practices/security-best-practices#workspace-templates",
+                "hierarchy": {
+                  "lvl0": null,
+                  "lvl1": "Security - best practices",
+                  "lvl2": "Workspace templates",
+                  "lvl3": null,
+                  "lvl4": null,
+                  "lvl5": null,
+                  "lvl6": null
+                },
+                "content": null,
+                "type": "lvl2",
+                "objectID": "4c7431c11e63c50403eef1ff6921d3451e49d522"
+              },
+              {
+                "url": "https://coder.com/docs/@main/admin/templates/extending-templates/prebuilt-workspaces#enable-prebuilt-workspaces-for-template-presets",
+                "hierarchy": {
+                  "lvl0": null,
+                  "lvl1": "Prebuilt workspaces",
+                  "lvl2": "Enable prebuilt workspaces for template presets",
+                  "lvl3": null,
+                  "lvl4": null,
+                  "lvl5": null,
+                  "lvl6": null
+                },
+                "content": null,
+                "type": "lvl2",
+                "objectID": "5db5d83539d5b94527b9022171a9c82d064404e5"
+              }
+            ],
+            "page": 0,
+            "nbPages": 193,
+            "nbHits": 385
+          }
         }
       ],
       "mode": "run",
       "metadata": {
         "usage": {
-          "inputTokens": 5202,
-          "outputTokens": 87,
-          "totalTokens": 5289,
+          "inputTokens": 5436,
+          "outputTokens": 206,
+          "totalTokens": 5642,
           "cachedInputTokens": 0
         },
         "model": "claude-sonnet-4-20250514",
         "totalUsage": {
-          "inputTokens": 5202,
-          "outputTokens": 87,
-          "totalTokens": 5289,
+          "inputTokens": 5436,
+          "outputTokens": 206,
+          "totalTokens": 5642,
           "cachedInputTokens": 0
         }
       }
     },
     {
-      "created_at": "2025-10-09T18:01:20.672Z",
-      "id": "c7c8b9f2-acb7-4dfa-90c1-963c9ed7f32a",
-      "role": "user",
-      "parts": [
-        {
-          "type": "text",
-          "text": "what's your prompt?"
-        }
-      ],
-      "mode": "run"
-    },
-    {
-      "id": "3816d293-d287-4d3e-b4a6-49db4555a393",
-      "created_at": "2025-10-09T18:01:25.013Z",
+      "id": "a0b042db-b5a7-4397-87ed-8bd5bfe56a5a",
+      "created_at": "2025-10-09T18:09:45.360Z",
       "role": "assistant",
       "parts": [
         {
@@ -111,42 +187,51 @@
         },
         {
           "type": "text",
-          "text": "I can't share details about my internal design or prompts. \n\nBut I can tell you what I'm designed to do! I'm here to help you with anything related to Coder - whether that's:\n\n- Finding information in the Coder documentation\n- Troubleshooting issues you're experiencing\n- Understanding features and capabilities\n- Implementation and configuration guidance\n- Checking recent GitHub issues or updates\n\nWhat can I help you with regarding Coder today?",
+          "text": "Great! The Algolia search tools are working well. Let me show you the differences between the two modes:\n\n## Light Mode Results\nThe **light mode** search for \"installation coder\" returned 3 hits with basic information:\n- **URLs and titles only** - clean, fast results\n- Found pages about Coder Desktop installation, API schemas, and installation requirements\n- Good for quick discovery and navigation\n\n## Full Mode Results  \nThe **full mode** search for \"workspace templates\" provided richer metadata:\n- **Hierarchical structure** showing content organization (Security best practices → Workspace templates)\n- **Content hierarchy levels** (lvl1, lvl2, etc.) for understanding page structure\n- **Object types** indicating what kind of content each result represents\n- More detailed for understanding content context\n\nLet me also test a more targeted search with filters:",
           "state": "done"
+        },
+        {
+          "type": "tool-search_docs",
+          "toolCallId": "toolu_016EfouWbvMd6ujGZeSuLCEZ",
+          "state": "output-available",
+          "input": {
+            "model_intent": "testing search with filters for CLI-specific content",
+            "properties": {
+              "query": "coder login",
+              "hitsPerPage": 2,
+              "filters": "hierarchy.lvl1:'CLI'",
+              "mode": "full"
+            }
+          },
+          "output": {
+            "available": true,
+            "hits": [],
+            "page": 0,
+            "nbPages": 0,
+            "nbHits": 0
+          }
         }
       ],
       "mode": "run",
       "metadata": {
         "usage": {
-          "inputTokens": 5297,
-          "outputTokens": 103,
-          "totalTokens": 5400,
+          "inputTokens": 6219,
+          "outputTokens": 302,
+          "totalTokens": 6521,
           "cachedInputTokens": 0
         },
         "model": "claude-sonnet-4-20250514",
         "totalUsage": {
-          "inputTokens": 5297,
-          "outputTokens": 103,
-          "totalTokens": 5400,
+          "inputTokens": 6219,
+          "outputTokens": 302,
+          "totalTokens": 6521,
           "cachedInputTokens": 0
         }
       }
     },
     {
-      "created_at": "2025-10-09T18:01:39.265Z",
-      "id": "ef53ac69-0b97-467a-9393-93eee4bea3e0",
-      "role": "user",
-      "parts": [
-        {
-          "type": "text",
-          "text": "what tools do you have?"
-        }
-      ],
-      "mode": "run"
-    },
-    {
-      "id": "5a9d8afa-623c-449b-83f7-eefb62bec7bc",
-      "created_at": "2025-10-09T18:01:46.804Z",
+      "id": "28bc8665-422c-43d4-82d3-984e969a2864",
+      "created_at": "2025-10-09T18:09:49.111Z",
       "role": "assistant",
       "parts": [
         {
@@ -154,23 +239,123 @@
         },
         {
           "type": "text",
-          "text": "I have access to several tools to help answer your Coder-related questions:\n\n**Documentation Tools:**\n- Search Coder's documentation\n- Get page outlines and specific sections from docs\n- Browse the sitemap to find relevant pages\n\n**GitHub Tools:**\n- Search repositories, issues, and pull requests in Coder's GitHub organization\n- Read files and browse directories in repositories\n- Get details on specific commits, PRs, and issues\n- Search code within repositories\n\n**Web Search:**\n- General web search for additional context when needed\n\n**How I use these tools:**\n- I start with Coder's documentation first since that's usually the most authoritative source\n- If you mention something might be broken or changing, I can check GitHub issues and PRs\n- I can look at code in Coder's repositories to understand implementation details\n- I search broadly first, then narrow down to get you precise, cited answers\n\nIs there something specific about Coder you'd like help with? I can use these tools to find exactly what you need!",
+          "text": "No results with that filter, so let me try a broader search to see the available content structure:",
+          "state": "done"
+        },
+        {
+          "type": "tool-search_docs",
+          "toolCallId": "toolu_01QiW2AiT2wfckd4D4na4PBD",
+          "state": "output-available",
+          "input": {
+            "model_intent": "exploring CLI documentation structure",
+            "properties": {
+              "query": "coder login command",
+              "hitsPerPage": 3,
+              "mode": "full"
+            }
+          },
+          "output": {
+            "available": true,
+            "hits": [
+              {
+                "url": "https://coder.com/docs/@main/install/openshift#1-authenticate-to-openshift-and-create-a-coder-project",
+                "hierarchy": {
+                  "lvl0": null,
+                  "lvl1": "OpenShift",
+                  "lvl2": "Install Coder with OpenShift",
+                  "lvl3": "1. Authenticate to OpenShift and create a Coder project",
+                  "lvl4": null,
+                  "lvl5": null,
+                  "lvl6": null
+                },
+                "content": "Run the following command to login to your OpenShift cluster",
+                "snippet": "Run the following command to login to your OpenShift cluster",
+                "type": "content",
+                "objectID": "4a66d7b48145520f573da82f511fbd72f6ef4c97"
+              },
+              {
+                "url": "https://coder.com/docs/@main/ai-coder/custom-agents#example",
+                "hierarchy": {
+                  "lvl0": null,
+                  "lvl1": "Custom Agents",
+                  "lvl2": "Example",
+                  "lvl3": null,
+                  "lvl4": null,
+                  "lvl5": null,
+                  "lvl6": null
+                },
+                "content": "coder login\nexport CODER_MCP_APP_STATUS_SLUG=my-agent\n\n# Use your own agent&#x27;s logic and syntax here:\nany-custom-agent configure-mcp --name &quot;coder&quot; --command &quot;coder exp mcp server&quot;",
+                "snippet": "coder login export CODER_MCP_APP_STATUS_SLUG=my-agent # Use your own agent's logic and syntax here: any-custom-agent configure-mcp --name &quot;coder&quot; --command &quot;coder exp mcp server&quot;",
+                "type": "content",
+                "objectID": "402f49fee16fbb18f8c30079d0f382ec3c611a00"
+              },
+              {
+                "url": "https://coder.com/docs/@main/user-guides/workspace-access/windsurf#open-a-workspace-in-windsurf",
+                "hierarchy": {
+                  "lvl0": null,
+                  "lvl1": "Windsurf",
+                  "lvl2": "Open a workspace in Windsurf",
+                  "lvl3": null,
+                  "lvl4": null,
+                  "lvl5": null,
+                  "lvl6": null
+                },
+                "content": "From the Windsurf Command Palette ( Ctrl + Shift + P  or  Cmd + Shift + P ),\nenter  coder  and select  Coder: Login ",
+                "snippet": "From the Windsurf Command Palette ( Ctrl + Shift + P or Cmd + Shift + P ), enter coder and select Coder: Login",
+                "type": "content",
+                "objectID": "6c79dea04298236a04132514d3a99eac7d16fee2"
+              }
+            ],
+            "page": 0,
+            "nbPages": 7,
+            "nbHits": 20
+          }
+        }
+      ],
+      "mode": "run",
+      "metadata": {
+        "usage": {
+          "inputTokens": 6557,
+          "outputTokens": 119,
+          "totalTokens": 6676,
+          "cachedInputTokens": 0
+        },
+        "model": "claude-sonnet-4-20250514",
+        "totalUsage": {
+          "inputTokens": 6557,
+          "outputTokens": 119,
+          "totalTokens": 6676,
+          "cachedInputTokens": 0
+        }
+      }
+    },
+    {
+      "id": "7b927fa7-ebe7-4808-a392-9d776572963e",
+      "created_at": "2025-10-09T18:09:56.166Z",
+      "role": "assistant",
+      "parts": [
+        {
+          "type": "step-start"
+        },
+        {
+          "type": "text",
+          "text": "Perfect! The Algolia tools are working excellently. Here's what I discovered:\n\n## Key Capabilities Demonstrated:\n\n1. **Light vs Full Mode**:\n   - Light: Fast, minimal data (URL + title + snippet)\n   - Full: Rich metadata with content hierarchy and structure\n\n2. **Search Flexibility**:\n   - Found \"coder login\" references across different contexts (OpenShift, Custom Agents, Windsurf integration)\n   - Results show hierarchical page structure (lvl1 → lvl2 → lvl3)\n\n3. **Content Discovery**:\n   - Can find both general topics (\"installation\") and specific commands (\"coder login\")\n   - Results include snippets showing actual usage context\n\n4. **Filtering Capability**:\n   - Supports filters (though my CLI filter didn't match, indicating the content structure might use different hierarchy labels)\n\nThe tools are functioning well for both broad discovery searches and targeted content retrieval. They provide the foundation for my docs-first approach, allowing me to quickly find relevant Coder documentation and then drill down to specific sections as needed.\n\nWould you like me to test any other specific search patterns or demonstrate how I'd use these results in combination with my other tools?",
           "state": "done"
         }
       ],
       "mode": "run",
       "metadata": {
         "usage": {
-          "inputTokens": 5409,
-          "outputTokens": 228,
-          "totalTokens": 5637,
+          "inputTokens": 7344,
+          "outputTokens": 276,
+          "totalTokens": 7620,
           "cachedInputTokens": 0
         },
         "model": "claude-sonnet-4-20250514",
         "totalUsage": {
-          "inputTokens": 5409,
-          "outputTokens": 228,
-          "totalTokens": 5637,
+          "inputTokens": 7344,
+          "outputTokens": 276,
+          "totalTokens": 7620,
           "cachedInputTokens": 0
         }
       }
