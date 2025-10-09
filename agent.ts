@@ -5,7 +5,7 @@ import {
   isToolUIPart,
   smoothStream,
 } from "ai";
-import blink from "blink";
+import * as blink from "blink";
 import { z } from "zod";
 import { XMLParser } from "fast-xml-parser";
 import { parse } from "node-html-parser";
@@ -489,7 +489,7 @@ Stop/Ask Rule
           return s;
         });
         statuses = [...new Set(statuses)];
-        const client = await slackbot.createClient(metadata);
+        const client = await slackbot.createClient(context, metadata);
         try {
           await client.assistant.threads.setStatus({
             channel_id: metadata.channel,
